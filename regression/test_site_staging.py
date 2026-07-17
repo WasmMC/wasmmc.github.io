@@ -105,6 +105,8 @@ with tempfile.TemporaryDirectory() as temporary:
     assert '<script src="backend-manager.js">' not in index
     assert 'href="favicon.svg"' not in index
     assert 'href="THIRD_PARTY_NOTICES.md"' in index
+    assert 'href="https://github.com/WasmMC/wasmmc.github.io"' in index
+    assert 'aria-label="WasmMC source code on GitHub"' in index
     assert 'title="Auto (dis)assemble"' in index
 
     app = (site / summary["frontend"]["app.js"]).read_text(encoding="utf-8")

@@ -144,6 +144,9 @@ body.is-dragging .drag-overlay{display:flex}
 .stat-line{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
 .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:48px;padding-bottom:22px;line-height:2;display:flex;flex-direction:column;align-items:center;gap:8px}
 .footer a{color:inherit;text-decoration:none}.footer a:hover{color:var(--accent2);text-decoration:underline}
+.footer-links{display:flex;align-items:center;gap:9px}
+.repo-link{display:inline-flex;align-items:center;justify-content:center}
+.repo-link:hover{text-decoration:none!important}.repo-link svg{width:15px;height:15px;fill:currentColor}
 .footer-actions{display:flex;align-items:center;gap:8px}
 .footer-btn{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);cursor:pointer;font-size:12px;padding:0 12px;transition:all .15s;white-space:nowrap}
 .add-btn,.footer-btn{box-sizing:border-box;height:27px;line-height:1;font-family:var(--sans)}
@@ -213,7 +216,12 @@ body.is-dragging .drag-overlay{display:flex}
 </div>
 <div class="footer">
   <span id="site-footer">© 2026 WasmMC · LLVM MC 22 WASM · hack the planet</span>
-  <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="license noopener">licenses and notices</a>
+  <span class="footer-links">
+    <a class="repo-link" href="https://github.com/WasmMC/wasmmc.github.io" target="_blank" rel="noopener" aria-label="WasmMC source code on GitHub" title="WasmMC source code on GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.2.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.6.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.5.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.8 5.4-5.5 5.7.4.4.8 1.1.8 2.2v3.2c0 .4.2.7.8.6A11.5 11.5 0 0 0 12 .7Z"/></svg>
+    </a>
+    <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="license noopener">licenses and notices</a>
+  </span>
 </div>
 
 <script src="backend-manager.js"></script>
