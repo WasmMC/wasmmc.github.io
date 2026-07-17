@@ -123,26 +123,40 @@ def load_known_differences(path: Path | None) -> dict[str, dict]:
     if path is None:
         return {}
     document = json.loads(path.read_text(encoding="utf-8"))
-    if document.get("schema") != 1 or not isinstance(document.get("cases"), list):
-        raise ValueError(f"{path}: expected schema 1 with a cases array")
+    if document.get("schema") != 2 or not isinstance(document.get("cases"), list):
+        raise ValueError(f"{path}: expected schema 2 with a cases array")
     result = {}
     for entry in document["cases"]:
         name = entry.get("name")
         if not name or name in result:
             raise ValueError(f"{path}: known-difference names must be unique and nonempty")
-        expected = entry.get("expected_differences")
-        if not isinstance(expected, list) or not expected or not all(
-            isinstance(item, str) and item for item in expected
-        ):
+        signatures = entry.get("expected_signatures")
+        if not isinstance(signatures, list) or not signatures:
             raise ValueError(
-                f"{path}: known difference {name!r} must define expected_differences"
+                f"{path}: known difference {name!r} must define expected_signatures"
             )
+        for signature in signatures:
+            differences = signature.get("differences") if isinstance(signature, dict) else None
+            if (
+                not isinstance(signature, dict)
+                or not isinstance(signature.get("description"), str)
+                or not signature["description"]
+                or not isinstance(differences, list)
+                or not differences
+                or not all(isinstance(item, str) and item for item in differences)
+            ):
+                raise ValueError(
+                    f"{path}: known difference {name!r} has an invalid expected signature"
+                )
         result[name] = entry
     return result
 
 
 def matches_known_difference(entry: dict, problems: list[str]) -> bool:
-    return problems == entry["expected_differences"]
+    return any(
+        problems == signature["differences"]
+        for signature in entry["expected_signatures"]
+    )
 
 
 def file_metadata(path: Path) -> dict:

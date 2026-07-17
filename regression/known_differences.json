@@ -1,15 +1,29 @@
 {
-  "schema": 1,
+  "schema": 2,
   "cases": [
     {
       "name": "ARM NEON rejected at baseline",
-      "reason": "LLVM 22.1.8 WASM accepts ARMv7 NEON with an unspecified feature mask; native llvm-mc requires NEON or MVE. Explicit -neon,-mve and +neon agree.",
+      "reason": "LLVM 22.1.8 handling of ARMv7 NEON with an unspecified feature mask varies between build contexts. Native and WASM may both accept it, while earlier matching builds rejected it natively and accepted it in WASM. Explicit -neon,-mve and +neon agree.",
       "tracking": "Feature enforcement suite",
-      "expected_differences": [
-        "wasm success=True, expected False",
-        "wasm illegal=False, expected True",
-        "success differs: native=False wasm=True",
-        "illegal behavior differs: native=True wasm=False"
+      "expected_signatures": [
+        {
+          "description": "Native rejects while WASM accepts",
+          "differences": [
+            "wasm success=True, expected False",
+            "wasm illegal=False, expected True",
+            "success differs: native=False wasm=True",
+            "illegal behavior differs: native=True wasm=False"
+          ]
+        },
+        {
+          "description": "Native and WASM both accept despite the baseline policy",
+          "differences": [
+            "native success=True, expected False",
+            "native illegal=False, expected True",
+            "wasm success=True, expected False",
+            "wasm illegal=False, expected True"
+          ]
+        }
       ]
     }
   ]

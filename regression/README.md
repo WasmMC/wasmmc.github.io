@@ -93,6 +93,10 @@ Known differences are explicit entries in `known_differences.json`:
 - `XPASS` means the mismatch disappeared, fails CI, and requires allowlist review.
 - Any unlisted difference is a failure.
 
+Each entry lists one or more exact accepted signatures. This permits documented
+toolchain-specific outcomes without allowing other failures in a named case to
+pass unnoticed.
+
 CI runs feature enforcement against the full backend and all three split
 backends. This ensures policy behavior is checked against the modules used by
 the browser, not only the compatibility module.

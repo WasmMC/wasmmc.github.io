@@ -43,10 +43,11 @@ assert {bundle: len(items) for bundle, items in selected.items()} == {
 
 known = load_known_differences(HERE / "known_differences.json")
 assert "ARM NEON rejected at baseline" in known
-expected = known["ARM NEON rejected at baseline"]["expected_differences"]
-assert matches_known_difference(known["ARM NEON rejected at baseline"], expected)
+neon = known["ARM NEON rejected at baseline"]
+for signature in neon["expected_signatures"]:
+    assert matches_known_difference(neon, signature["differences"])
 assert not matches_known_difference(
-    known["ARM NEON rejected at baseline"], expected + ["new regression"]
+    neon, neon["expected_signatures"][0]["differences"] + ["new regression"]
 )
 
 report_schema = json.loads((HERE / "report-schema.json").read_text(encoding="utf-8"))
