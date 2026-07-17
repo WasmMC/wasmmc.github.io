@@ -1,0 +1,125 @@
+# Motorola 68000-family coverage. Optional until the rebuilt WASM lands.
+
+=== M68k 68020 instructions
+operation = assemble
+triple = m68k-unknown-linux-gnu
+cpu = M68020
+wasm_target = optional
+split = lines
+---
+nop
+rts
+rte
+trap #1
+move.b %d0, %d1
+move.w %d2, %d3
+move.l %d4, %d5
+moveq #1, %d0
+lea 0(%a0), %a1
+add.b %d0, %d1
+add.w %d2, %d3
+add.l %d4, %d5
+adda.l %a0, %a1
+add.l #7, %d0
+sub.b %d0, %d1
+sub.w %d2, %d3
+sub.l %d4, %d5
+suba.l %a0, %a1
+sub.l #7, %d0
+and.l %d0, %d1
+or.l %d2, %d3
+eor.l %d4, %d5
+not.l %d0
+neg.l %d1
+cmp.l %d4, %d5
+cmpi.l #42, %d0
+mulu %d0, %d1
+muls %d2, %d3
+divu %d4, %d5
+divs %d6, %d7
+lsl.l #1, %d0
+lsr.l #2, %d1
+asr.l #4, %d3
+rol.l #5, %d4
+ror.l #6, %d5
+ext.w %d0
+ext.l %d1
+btst %d0, %d1
+bset %d2, %d3
+bclr %d4, %d5
+bchg %d6, %d7
+link.w %a6, #-16
+unlk %a6
+move.l (%a0), %d0
+move.l %d1, (%a2)
+move.w 4(%a3), %d2
+move.b %d3, 7(%a4)
+
+=== M68k 68000 instructions
+operation = assemble
+triple = m68k-unknown-linux-gnu
+cpu = M68000
+wasm_target = optional
+split = lines
+---
+nop
+rts
+move.b %d0, %d1
+move.w %d2, %d3
+move.l %d4, %d5
+moveq #-1, %d6
+add.w %d0, %d1
+sub.w %d2, %d3
+and.l %d4, %d5
+or.l %d6, %d7
+cmp.l %d0, %d1
+lsl.l #1, %d2
+ror.l #3, %d3
+
+=== M68k illegal instructions
+operation = assemble
+triple = m68k-unknown-linux-gnu
+cpu = M68020
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_a_m68k_instruction %d0
+move.l %d0, #1
+
+=== M68k disassembly
+operation = disassemble
+triple = m68k-unknown-linux-gnu
+cpu = M68020
+wasm_target = optional
+split = lines
+---
+4e 71
+4e 75
+4e 73
+4e 41
+12 00
+36 02
+2a 04
+70 01
+43 e8 00 00
+d2 00
+d6 42
+da 84
+d3 c8
+d0 bc 00 00 00 07
+92 00
+96 42
+9a 84
+93 c8
+90 bc 00 00 00 07
+c2 80
+
+=== M68k illegal disassembly
+operation = disassemble
+triple = m68k-unknown-linux-gnu
+cpu = M68020
+wasm_target = optional
+expect = illegal
+---
+ff ff

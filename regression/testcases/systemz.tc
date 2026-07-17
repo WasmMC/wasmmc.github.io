@@ -1,0 +1,122 @@
+# IBM SystemZ/zArchitecture coverage. Optional until the rebuilt WASM lands.
+
+=== SystemZ z15 instructions
+operation = assemble
+triple = s390x-unknown-linux-gnu
+cpu = z15
+wasm_target = optional
+split = lines
+---
+nop
+lgr %r0, %r1
+lr %r2, %r3
+lgfr %r4, %r5
+lghi %r6, 1
+lhi %r7, -7
+agr %r8, %r9
+ar %r10, %r11
+aghi %r12, 9
+ahi %r13, -3
+sgr %r0, %r1
+sr %r2, %r3
+ngr %r4, %r5
+nr %r6, %r7
+ogr %r8, %r9
+or %r10, %r11
+xgr %r12, %r13
+xr %r14, %r15
+sllg %r0, %r1, 3
+srlg %r2, %r3, 7
+srag %r4, %r5, 11
+msgr %r6, %r7
+msr %r8, %r9
+dsgr %r10, %r11
+dlgr %r12, %r13
+cgr %r0, %r1
+cr %r2, %r3
+cghi %r4, 42
+chi %r5, -7
+lg %r6, 0(%r7)
+l %r8, 4(%r9)
+llgc %r10, 1(%r11)
+llgh %r12, 2(%r13)
+stg %r14, 8(%r15)
+st %r0, 4(%r1)
+stc %r2, 1(%r3)
+sth %r4, 2(%r5)
+la %r6, 16(%r7)
+larl %r8, 0
+br %r14
+bcr 15, %r14
+svc 0
+ipm %r0
+flogr %r2, %r3
+popcnt %r4, %r5
+
+=== SystemZ z10 baseline
+operation = assemble
+triple = s390x-unknown-linux-gnu
+cpu = z10
+wasm_target = optional
+split = lines
+---
+nop
+lgr %r0, %r1
+lr %r2, %r3
+lghi %r4, 1
+agr %r5, %r6
+sgr %r7, %r8
+ngr %r9, %r10
+ogr %r11, %r12
+xgr %r13, %r14
+lg %r0, 0(%r1)
+stg %r2, 8(%r3)
+br %r14
+
+=== SystemZ illegal instructions
+operation = assemble
+triple = s390x-unknown-linux-gnu
+cpu = z15
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_a_systemz_instruction %r0
+lgr %r0, %r99
+
+=== SystemZ disassembly
+operation = disassemble
+triple = s390x-unknown-linux-gnu
+cpu = z15
+wasm_target = optional
+split = lines
+---
+47 00 00 00
+b9 04 00 01
+18 23
+b9 14 00 45
+a7 69 00 01
+a7 78 ff f9
+b9 08 00 89
+1a ab
+a7 cb 00 09
+a7 da ff fd
+b9 09 00 01
+1b 23
+b9 80 00 45
+14 67
+b9 81 00 89
+16 ab
+b9 82 00 cd
+17 ef
+eb 01 00 03 00 0d
+eb 23 00 07 00 0c
+
+=== SystemZ illegal disassembly
+operation = disassemble
+triple = s390x-unknown-linux-gnu
+cpu = z15
+wasm_target = optional
+expect = illegal
+---
+ff ff

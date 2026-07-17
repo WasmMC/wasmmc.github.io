@@ -1,0 +1,124 @@
+# ARMv7 A32 instruction corpus. Each line is one independent test.
+
+=== ARMv7 integer instructions
+operation = assemble
+triple = armv7-unknown-linux-gnueabihf
+split = lines
+---
+nop
+mov r0, r1
+mov r7, r8
+mov r0, #0
+mov r1, #255
+movw r2, #0x1234
+movt r2, #0x5678
+mvn r3, r4
+add r0, r1, r2
+add r3, r4, #1
+adds r5, r6, r7
+adc r0, r1, r2
+sub r0, r1, r2
+sub r3, r4, #7
+subs r5, r6, r7
+sbc r0, r1, r2
+rsb r3, r4, #0
+and r0, r1, r2
+orr r3, r4, r5
+eor r6, r7, r8
+bic r9, r10, r11
+tst r0, r1
+teq r2, r3
+cmp r4, r5
+cmn r6, r7
+lsl r0, r1, #3
+lsr r2, r3, #7
+asr r4, r5, #11
+ror r6, r7, #13
+mul r0, r1, r2
+mla r3, r4, r5, r6
+umull r0, r1, r2, r3
+smull r4, r5, r6, r7
+clz r0, r1
+rev r2, r3
+rev16 r4, r5
+revsh r6, r7
+sxth r0, r1
+sxtb r2, r3
+uxth r4, r5
+uxtb r6, r7
+pkhbt r0, r1, r2, lsl #8
+pkhtb r3, r4, r5, asr #8
+ldr r0, [r1]
+ldr r2, [r3, #12]
+ldr r4, [r5, #-8]
+ldrb r6, [r7, #3]
+ldrh r8, [r9, #6]
+ldrsb r10, [r11, #1]
+ldrsh r0, [r1, #2]
+str r2, [r3]
+str r4, [r5, #16]
+strb r6, [r7, #5]
+strh r8, [r9, #10]
+ldmia r0!, {r1, r2, r3}
+stmdb sp!, {r4, r5, r6, lr}
+push {r4, r5, lr}
+pop {r4, r5, pc}
+bx lr
+blx r3
+mov r0, r0
+
+=== ARMv7 conditional instructions
+operation = assemble
+triple = armv7-unknown-linux-gnueabihf
+split = lines
+---
+moveq r0, r1
+movne r2, r3
+addgt r4, r5, r6
+suble r7, r8, #1
+cmpne r9, r10
+ldreq r0, [r1]
+strne r2, [r3]
+bxeq lr
+
+=== ARM illegal instructions
+operation = assemble
+triple = armv7-unknown-linux-gnueabihf
+expect = illegal
+split = lines
+---
+not_an_arm_instruction r0
+add r0, r1, #0x12345678
+
+=== ARMv7 disassembly
+operation = disassemble
+triple = armv7-unknown-linux-gnueabihf
+split = lines
+---
+00 f0 20 e3
+01 00 a0 e1
+08 70 a0 e1
+00 00 a0 e3
+ff 10 a0 e3
+34 22 01 e3
+78 26 45 e3
+04 30 e0 e1
+02 00 81 e0
+01 30 84 e2
+07 50 96 e0
+02 00 a1 e0
+02 00 41 e0
+07 30 44 e2
+02 00 01 e0
+01 00 10 e1
+11 0f 6f e1
+00 00 91 e5
+00 20 83 e5
+1e ff 2f e1
+
+=== ARM raw register printer
+operation = disassemble
+triple = armv7-unknown-linux-gnueabihf
+printer_options = reg-names-raw
+---
+0d 00 a0 e1

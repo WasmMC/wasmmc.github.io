@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "llvm_version": "22.1.8",
+  "stable": [
+    "AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai",
+    "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV",
+    "Sparc", "SPIRV", "SystemZ", "VE", "WebAssembly", "X86", "XCore"
+  ],
+  "experimental": ["ARC", "CSKY", "DirectX", "M68k", "Xtensa"],
+  "bundles": {
+    "mainstream": ["X86", "AArch64", "ARM"],
+    "systems": [
+      "RISCV", "Mips", "PowerPC", "Sparc", "WebAssembly", "BPF",
+      "LoongArch", "SystemZ"
+    ],
+    "embedded": ["AVR", "MSP430", "M68k", "Xtensa", "Hexagon"]
+  },
+  "excluded": {
+    "AMDGPU": "GPU backend; intentionally excluded from browser MC bundles",
+    "ARC": "experimental family not currently exposed by the application",
+    "CSKY": "experimental family not currently exposed by the application",
+    "DirectX": "experimental shader backend; intentionally excluded",
+    "Lanai": "not currently exposed by the application",
+    "NVPTX": "GPU backend; intentionally excluded from browser MC bundles",
+    "SPIRV": "GPU/intermediate representation backend; intentionally excluded",
+    "VE": "not currently exposed by the application",
+    "XCore": "not currently exposed by the application"
+  }
+}

@@ -1,0 +1,94 @@
+# The wrapper can disassemble WebAssembly instruction bytes. Assembly currently
+# returns a full wasm object warning rather than extractable instruction bytes.
+
+=== WebAssembly 32 disassembly
+operation = disassemble
+triple = wasm32-unknown-unknown
+split = lines
+---
+00
+01
+0b
+0f
+1a
+1b
+20 00
+21 00
+22 00
+23 00
+24 00
+41 00
+41 01
+41 7f
+42 00
+42 01
+45
+46
+47
+48
+49
+4a
+4b
+4c
+4d
+4e
+4f
+50
+51
+52
+53
+54
+55
+56
+57
+67
+68
+69
+6a
+6b
+6c
+6d
+6e
+6f
+70
+71
+72
+73
+74
+75
+76
+77
+78
+
+=== WebAssembly 64 disassembly
+operation = disassemble
+triple = wasm64-unknown-unknown
+split = lines
+---
+42 00
+42 01
+42 7f
+50
+51
+52
+53
+54
+55
+56
+57
+79
+7a
+7b
+7c
+7d
+7e
+7f
+80
+81
+82
+83
+84
+85
+86
+87
+88

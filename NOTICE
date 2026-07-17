@@ -1,0 +1,8 @@
+WasmMC
+Copyright 2026 WasmMC contributors
+
+This product includes software developed by the LLVM Project.
+This product includes software developed by the Emscripten authors.
+
+Third-party components retain their respective copyright and license terms.
+See THIRD_PARTY_NOTICES.md and the licenses directory for details.

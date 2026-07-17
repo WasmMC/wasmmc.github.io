@@ -1,0 +1,57 @@
+# Smoke coverage for bytes, printed instructions, and rejection behavior.
+
+=== x86_64 assemble nop
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+---
+nop
+
+=== x86_64 assemble intel operands
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+---
+mov rax, rbx
+
+=== x86_64 disassemble nop
+operation = disassemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+---
+90
+
+=== x86_64 disassemble operands
+operation = disassemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+---
+48 89 d8
+
+=== aarch64 assemble nop
+operation = assemble
+triple = aarch64-unknown-linux-gnu
+---
+nop
+
+=== aarch64 disassemble nop
+operation = disassemble
+triple = aarch64-unknown-linux-gnu
+---
+1f 20 03 d5
+
+=== illegal assembly
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+expect = illegal
+---
+not_a_real_instruction rax
+
+=== illegal disassembly
+operation = disassemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+expect = illegal
+---
+0f

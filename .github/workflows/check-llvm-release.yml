@@ -1,0 +1,52 @@
+name: Check LLVM releases for WasmMC
+
+on:
+  schedule:
+    - cron: "23 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      include_major:
+        description: Also propose the newest stable LLVM major
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Check official stable releases
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCLUDE_MAJOR: ${{ inputs.include_major || 'false' }}
+        run: |
+          args=(--update --github-output "$GITHUB_OUTPUT" \
+            --target-inventory regression/llvm-target-inventory.json \
+            --checksum-file LLVM_SHA256)
+          if [[ "$INCLUDE_MAJOR" == "true" ]]; then args+=(--include-major); fi
+          python3 scripts/check_llvm_release.py "${args[@]}"
+
+      - name: Open tested version-update pull request
+        if: steps.release.outputs.update_available == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          branch: automation/llvm-${{ steps.release.outputs.latest }}
+          delete-branch: true
+          commit-message: Pin LLVM ${{ steps.release.outputs.latest }}
+          title: Pin LLVM ${{ steps.release.outputs.latest }}
+          body: |
+            Automated stable LLVM release proposal.
+
+            Previous: `${{ steps.release.outputs.current }}`
+            Proposed: `${{ steps.release.outputs.latest }}`
+            Major change: `${{ steps.release.outputs.major_change }}`
+
+            The target inventory, build, and regression workflows must pass
+            before merge. Any new, removed, promoted, or demoted LLVM target
+            requires an explicit inventory update and disposition review.

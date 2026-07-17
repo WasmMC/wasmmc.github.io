@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "regression-report.schema.json",
+  "title": "WasmMC native and WebAssembly regression report",
+  "type": "object",
+  "required": [
+    "schema", "generated_at", "suite", "bundle", "selected_cases",
+    "duration_seconds", "llvm", "backend", "totals", "cases", "harness_error"
+  ],
+  "properties": {
+    "schema": {"const": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "suite": {"type": "string", "minLength": 1},
+    "bundle": {"enum": ["full", "mainstream", "systems", "embedded"]},
+    "selected_cases": {"type": "integer", "minimum": 0},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "harness_error": {"type": ["string", "null"]},
+    "llvm": {
+      "type": "object",
+      "required": ["executable", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "executable": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "backend": {
+      "allOf": [
+        {"$ref": "#/$defs/fileMetadata"},
+        {
+          "type": "object",
+          "properties": {
+            "wasm": {"$ref": "#/$defs/fileMetadata"}
+          }
+        }
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": ["passed", "failed", "skipped", "known_mismatches", "unexpected_passes"],
+      "additionalProperties": false,
+      "properties": {
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "skipped": {"type": "integer", "minimum": 0},
+        "known_mismatches": {"type": "integer", "minimum": 0},
+        "unexpected_passes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name", "source", "operation", "triple", "cpu", "features",
+          "expect", "status", "duration_seconds", "differences",
+          "known_difference", "native", "wasm", "metadata"
+        ],
+        "properties": {
+          "name": {"type": "string"},
+          "source": {
+            "type": "object",
+            "required": ["file", "line"],
+            "additionalProperties": false,
+            "properties": {
+              "file": {"type": "string"},
+              "line": {"type": "integer", "minimum": 1}
+            }
+          },
+          "operation": {"enum": ["assemble", "disassemble"]},
+          "status": {"enum": ["passed", "failed", "skipped", "known_mismatch", "unexpected_pass"]},
+          "triple": {"type": "string"},
+          "cpu": {"type": "string"},
+          "features": {"type": "string"},
+          "expect": {"enum": ["success", "illegal"]},
+          "differences": {"type": "array", "items": {"type": "string"}},
+          "duration_seconds": {"type": "number", "minimum": 0},
+          "known_difference": {"type": ["object", "null"]},
+          "native": {"$ref": "#/$defs/backendResult"},
+          "wasm": {"$ref": "#/$defs/backendResult"},
+          "metadata": {"type": "object"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fileMetadata": {
+      "type": "object",
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "backendResult": {
+      "type": "object",
+      "required": ["success", "illegal", "bytes", "disassembly", "diagnostics"],
+      "additionalProperties": false,
+      "properties": {
+        "success": {"type": "boolean"},
+        "illegal": {"type": "boolean"},
+        "bytes": {"type": "string"},
+        "disassembly": {"type": "array", "items": {"type": "string"}},
+        "diagnostics": {"type": "string"}
+      }
+    }
+  }
+}

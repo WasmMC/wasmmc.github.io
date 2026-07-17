@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "llvmVersion": "@LLVM_RELEASE_VERSION@",
+  "buildYear": "@LLVM_BUILD_YEAR@",
+  "bundles": {
+    "mainstream": {
+      "js": "llvm_backend_mainstream.js",
+      "wasm": "llvm_backend_mainstream.wasm",
+      "factory": "LLVMEngineMainstream",
+      "families": ["X86", "ARM", "AArch64"]
+    },
+    "systems": {
+      "js": "llvm_backend_systems.js",
+      "wasm": "llvm_backend_systems.wasm",
+      "factory": "LLVMEngineSystems",
+      "families": ["RISCV", "Mips", "PowerPC", "Sparc", "WebAssembly", "BPF", "LoongArch", "SystemZ"]
+    },
+    "embedded": {
+      "js": "llvm_backend_embedded.js",
+      "wasm": "llvm_backend_embedded.wasm",
+      "factory": "LLVMEngineEmbedded",
+      "families": ["AVR", "MSP430", "M68k", "Xtensa", "Hexagon"]
+    },
+    "full": {
+      "js": "llvm_backend.js",
+      "wasm": "llvm_backend.wasm",
+      "factory": "LLVMEngine",
+      "families": ["X86", "ARM", "AArch64", "RISCV", "Mips", "PowerPC", "Sparc", "WebAssembly", "BPF", "LoongArch", "SystemZ", "AVR", "MSP430", "M68k", "Xtensa", "Hexagon"]
+    }
+  }
+}

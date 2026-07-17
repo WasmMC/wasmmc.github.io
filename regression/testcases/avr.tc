@@ -1,0 +1,74 @@
+# Native LLVM supports AVR; this WASM build does not currently include it.
+
+=== AVR instructions
+operation = assemble
+triple = avr-unknown-unknown
+cpu = atmega328p
+wasm_target = optional
+split = lines
+---
+nop
+break
+sleep
+wdr
+ret
+reti
+sec
+clc
+sen
+cln
+sez
+clz
+sei
+cli
+mov r0, r1
+mov r30, r31
+ldi r16, 1
+ldi r31, 255
+add r2, r3
+adc r4, r5
+sub r6, r7
+sbc r8, r9
+and r10, r11
+or r12, r13
+eor r14, r15
+com r16
+neg r17
+inc r18
+dec r19
+lsl r20
+lsr r21
+asr r22
+ror r23
+swap r24
+push r25
+pop r26
+
+=== AVR disassembly
+operation = disassemble
+triple = avr-unknown-unknown
+cpu = atmega328p
+wasm_target = optional
+split = lines
+---
+00 00
+98 95
+88 95
+08 95
+18 95
+08 94
+88 94
+01 2c
+ef 2e
+01 e0
+
+=== AVR illegal instructions
+operation = assemble
+triple = avr-unknown-unknown
+cpu = atmega328p
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_an_avr_instruction r0
+ldi r0, 999

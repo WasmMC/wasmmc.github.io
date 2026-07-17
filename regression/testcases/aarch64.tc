@@ -1,0 +1,155 @@
+# AArch64 baseline instruction corpus. Each line is one independent test.
+
+=== AArch64 integer instructions
+operation = assemble
+triple = aarch64-unknown-linux-gnu
+split = lines
+---
+nop
+ret
+ret x3
+br x4
+blr x5
+mov x0, x1
+mov w2, w3
+mov x4, #0
+mov x5, #0xffff
+movz x6, #0x1234
+movn x7, #0x5678
+movk x8, #0x9abc, lsl #16
+add x0, x1, x2
+add w3, w4, w5
+add x6, x7, #1
+adds x8, x9, x10
+adc x11, x12, x13
+adcs x14, x15, x16
+sub x0, x1, x2
+sub w3, w4, w5
+sub x6, x7, #7
+subs x8, x9, x10
+sbc x11, x12, x13
+sbcs x14, x15, x16
+neg x0, x1
+negs x2, x3
+and x4, x5, x6
+ands w7, w8, w9
+orr x10, x11, x12
+eor x13, x14, x15
+bic x16, x17, x18
+orn x19, x20, x21
+eon x22, x23, x24
+mvn x25, x26
+lsl x0, x1, #3
+lsr x2, x3, #7
+asr x4, x5, #11
+ror x6, x7, #13
+clz x8, x9
+cls w10, w11
+rbit x12, x13
+rev x14, x15
+rev16 x16, x17
+mul x0, x1, x2
+madd x3, x4, x5, x6
+msub x7, x8, x9, x10
+smull x11, w12, w13
+umull x14, w15, w16
+sdiv x17, x18, x19
+udiv w20, w21, w22
+cmp x0, x1
+cmp w2, #42
+cmn x3, x4
+tst x5, x6
+csel x7, x8, x9, eq
+csinc x10, x11, x12, ne
+csinv x13, x14, x15, gt
+csneg x16, x17, x18, le
+cset w19, hi
+csetm x20, ls
+extr x21, x22, x23, #17
+ubfx x24, x25, #8, #16
+sbfx x26, x27, #4, #12
+bfi x0, x1, #16, #8
+ldr x0, [x1]
+ldr w2, [x3, #12]
+ldrb w4, [x5, #3]
+ldrh w6, [x7, #6]
+ldrsb x8, [x9, #1]
+ldrsh x10, [x11, #2]
+ldrsw x12, [x13, #4]
+str x14, [x15]
+str w16, [x17, #20]
+strb w18, [x19, #5]
+strh w20, [x21, #10]
+ldp x0, x1, [x2]
+stp x3, x4, [x5, #16]
+ldp w6, w7, [x8, #-8]
+stp w9, w10, [sp, #-16]!
+ldr x11, [x12], #8
+str x13, [x14, #8]!
+adr x0, #0
+adrp x1, #0
+svc #0
+brk #1
+hlt #2
+dmb sy
+dsb sy
+isb
+
+=== AArch64 CRC and crypto instructions
+operation = assemble
+triple = aarch64-unknown-linux-gnu
+features = +crc,+crypto
+split = lines
+---
+crc32b w0, w1, w2
+crc32h w3, w4, w5
+crc32w w6, w7, w8
+crc32x w9, w10, x11
+crc32cb w12, w13, w14
+aesd v0.16b, v1.16b
+aeSE v2.16b, v3.16b
+aesmc v4.16b, v5.16b
+sha1h s0, s1
+sha256su0 v2.4s, v3.4s
+
+=== AArch64 illegal instructions
+operation = assemble
+triple = aarch64-unknown-linux-gnu
+expect = illegal
+split = lines
+---
+not_an_aarch64_instruction x0
+add x0, x1, #0x12345
+
+=== AArch64 disassembly
+operation = disassemble
+triple = aarch64-unknown-linux-gnu
+split = lines
+---
+1f 20 03 d5
+c0 03 5f d6
+60 00 5f d6
+80 00 1f d6
+a0 00 3f d6
+e0 03 01 aa
+e2 03 03 2a
+04 00 80 d2
+e5 ff 9f d2
+86 46 82 d2
+07 cf 8a 92
+88 57 b3 f2
+20 00 02 8b
+83 00 05 0b
+e6 04 00 91
+28 01 0a ab
+8b 01 0d 9a
+ee 01 10 ba
+20 00 02 cb
+83 00 05 4b
+
+=== AArch64 canonical printer
+operation = disassemble
+triple = aarch64-unknown-linux-gnu
+printer_options = no-aliases
+---
+1f 20 03 d5

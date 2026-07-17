@@ -1,0 +1,127 @@
+# IA-32 baseline instruction corpus. Each line is one independent test.
+
+=== x86 i686 integer instructions
+operation = assemble
+triple = i386-unknown-linux-gnu
+cpu = i686
+intel_syntax = true
+split = lines
+---
+nop
+int3
+clc
+stc
+cld
+std
+cmc
+lahf
+sahf
+push eax
+push ebx
+push ecx
+push edx
+pop eax
+pop ebx
+pop ecx
+pop edx
+mov eax, ebx
+mov ecx, edx
+mov esi, edi
+mov ebp, esp
+mov eax, 0
+mov eax, 1
+mov ecx, 127
+mov edx, 0x12345678
+movzx eax, bl
+movzx eax, bx
+movsx eax, bl
+movsx eax, bx
+xchg eax, ebx
+xchg ecx, edx
+lea eax, [ebx + ecx*4 + 8]
+add eax, ebx
+add eax, 1
+adc ecx, edx
+sub eax, ebx
+sub eax, 1
+sbb ecx, edx
+inc eax
+dec ebx
+neg ecx
+not edx
+and eax, ebx
+and eax, 0xff
+or ecx, edx
+or ecx, 1
+xor eax, eax
+xor ebx, ecx
+cmp eax, ebx
+cmp eax, 42
+test eax, eax
+test ebx, 0xff
+shl eax, 1
+shl ebx, cl
+shr ecx, 3
+sar edx, cl
+rol eax, 1
+ror ebx, cl
+bt eax, ecx
+bts ebx, 7
+btr ecx, edx
+btc edx, 3
+bsf eax, ebx
+bsr ecx, edx
+imul eax, ebx
+imul eax, ebx, 7
+mul ecx
+div ebx
+idiv ecx
+cdq
+seta al
+setbe bl
+sete cl
+setne dl
+cmova eax, ebx
+cmove ecx, edx
+cmovne esi, edi
+ret
+leave
+
+=== x86 illegal instructions
+operation = assemble
+triple = i386-unknown-linux-gnu
+cpu = i686
+intel_syntax = true
+expect = illegal
+split = lines
+---
+not_an_x86_instruction eax
+mov cr8, eax
+
+=== x86 disassembly
+operation = disassemble
+triple = i386-unknown-linux-gnu
+cpu = i686
+intel_syntax = true
+split = lines
+---
+90
+cc
+f8
+f9
+fc
+fd
+50
+58
+89 d8
+b8 01 00 00 00
+0f b6 c3
+8d 44 8b 08
+01 d8
+29 d8
+31 c0
+39 d8
+d1 e0
+0f bc c3
+c3
+c9

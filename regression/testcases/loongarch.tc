@@ -1,0 +1,196 @@
+# LoongArch32/64 scalar and vector coverage. Optional until the rebuilt WASM lands.
+
+=== LoongArch32 scalar instructions
+operation = assemble
+triple = loongarch32-unknown-linux-gnu
+cpu = generic-la32
+wasm_target = optional
+split = lines
+---
+nop
+move $a0, $a1
+add.w $a0, $a1, $a2
+sub.w $a3, $a4, $a5
+slt $a6, $a7, $t0
+sltu $t1, $t2, $t3
+and $t4, $t5, $t6
+or $a0, $a1, $a2
+xor $a3, $a4, $a5
+nor $a6, $a7, $t0
+addi.w $t1, $t2, 1
+andi $t3, $t4, 255
+slli.w $t5, $t6, 3
+srli.w $a0, $a1, 7
+srai.w $a2, $a3, 11
+mul.w $a4, $a5, $a6
+div.w $a7, $t0, $t1
+ld.w $t2, $t3, 8
+st.w $t4, $t5, 12
+jirl $zero, $ra, 0
+
+=== LoongArch32 disassembly
+operation = disassemble
+triple = loongarch32-unknown-linux-gnu
+cpu = generic-la32
+wasm_target = optional
+split = lines
+---
+00 00 40 03
+a4 00 15 00
+a4 18 10 00
+07 25 11 00
+6a 31 12 00
+cd bd 12 00
+30 ca 14 00
+a4 18 15 00
+07 a5 15 00
+6a 31 14 00
+
+=== LoongArch64 scalar instructions
+operation = assemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+wasm_target = optional
+split = lines
+---
+nop
+move $a0, $a1
+add.w $a0, $a1, $a2
+add.d $a3, $a4, $a5
+sub.w $a6, $a7, $t0
+sub.d $t1, $t2, $t3
+slt $t4, $t5, $t6
+sltu $a0, $a1, $a2
+and $a3, $a4, $a5
+or $a6, $a7, $t0
+xor $t1, $t2, $t3
+nor $t4, $t5, $t6
+addi.w $a0, $a1, 1
+addi.d $a2, $a3, -7
+andi $a4, $a5, 255
+ori $a6, $a7, 0x123
+xori $t0, $t1, 0x456
+slli.w $t2, $t3, 3
+srli.w $t4, $t5, 7
+srai.w $t6, $a0, 11
+slli.d $a1, $a2, 13
+srli.d $a3, $a4, 17
+srai.d $a5, $a6, 19
+mul.w $a7, $t0, $t1
+mul.d $t2, $t3, $t4
+mulh.w $t5, $t6, $a0
+div.w $a1, $a2, $a3
+div.wu $a4, $a5, $a6
+mod.w $a7, $t0, $t1
+mod.wu $t2, $t3, $t4
+clz.w $t5, $t6
+ctz.w $a0, $a1
+clz.d $a2, $a3
+ctz.d $a4, $a5
+ld.b $a0, $a1, 0
+ld.bu $a2, $a3, 1
+ld.h $a4, $a5, 2
+ld.hu $a6, $a7, 4
+ld.w $t0, $t1, 8
+ld.wu $t2, $t3, 12
+ld.d $t4, $t5, 16
+st.b $a0, $a1, 1
+st.h $a2, $a3, 2
+st.w $a4, $a5, 4
+st.d $a6, $a7, 8
+jirl $zero, $ra, 0
+break 1
+syscall 2
+dbar 0
+ibar 0
+
+=== LoongArch LSX instructions
+operation = assemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+features = +lsx
+wasm_target = optional
+split = lines
+---
+vadd.b $vr0, $vr1, $vr2
+vadd.h $vr3, $vr4, $vr5
+vadd.w $vr6, $vr7, $vr8
+vadd.d $vr9, $vr10, $vr11
+vsub.b $vr12, $vr13, $vr14
+vand.v $vr15, $vr16, $vr17
+vor.v $vr18, $vr19, $vr20
+vxor.v $vr21, $vr22, $vr23
+
+=== LoongArch LASX instructions
+operation = assemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+features = +lasx
+wasm_target = optional
+split = lines
+---
+xvadd.b $xr0, $xr1, $xr2
+xvadd.h $xr3, $xr4, $xr5
+xvadd.w $xr6, $xr7, $xr8
+xvadd.d $xr9, $xr10, $xr11
+xvsub.b $xr12, $xr13, $xr14
+xvand.v $xr15, $xr16, $xr17
+xvor.v $xr18, $xr19, $xr20
+xvxor.v $xr21, $xr22, $xr23
+
+=== LoongArch illegal instructions
+operation = assemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_a_loongarch_instruction $a0
+addi.d $a0, $a1, 999999
+
+=== LoongArch64 disassembly
+operation = disassemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+wasm_target = optional
+split = lines
+---
+00 00 40 03
+a4 00 15 00
+a4 18 10 00
+07 a5 10 00
+6a 31 11 00
+cd bd 11 00
+30 4a 12 00
+a4 98 12 00
+07 a5 14 00
+6a 31 15 00
+cd bd 15 00
+30 4a 14 00
+a4 04 80 02
+e6 e4 ff 02
+28 fd 43 03
+6a 8d 84 03
+ac 59 d1 03
+ee 8d 40 00
+30 9e 44 00
+92 ac 48 00
+
+=== LoongArch64 illegal disassembly
+operation = disassemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+wasm_target = optional
+expect = illegal
+---
+ff ff ff ff
+
+=== LoongArch64 numeric register printer
+operation = disassemble
+triple = loongarch64-unknown-linux-gnu
+cpu = generic-la64
+printer_options = numeric
+wasm_target = optional
+---
+a4 b0 c0 02

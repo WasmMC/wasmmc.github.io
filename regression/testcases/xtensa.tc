@@ -1,0 +1,122 @@
+# Xtensa ESP32/ESP8266 coverage. Optional until the rebuilt WASM lands.
+
+=== Xtensa ESP32 instructions
+operation = assemble
+triple = xtensa-unknown-elf
+cpu = esp32
+wasm_target = optional
+split = lines
+---
+nop
+ret
+ret.n
+rsync
+isync
+dsync
+esync
+memw
+extw
+syscall
+waiti 0
+mov.n a2, a3
+movi a4, 1
+movi.n a5, -7
+add a6, a7, a8
+add.n a9, a10, a11
+addi a12, a13, 7
+addi.n a14, a15, -1
+sub a2, a3, a4
+and a5, a6, a7
+or a8, a9, a10
+xor a11, a12, a13
+abs a14, a15
+neg a2, a3
+slli a4, a5, 3
+srli a6, a7, 7
+srai a8, a9, 11
+extui a10, a11, 4, 8
+sext a12, a13, 7
+mul16u a2, a3, a4
+mul16s a5, a6, a7
+mull a8, a9, a10
+quou a11, a12, a13
+quos a14, a15, a2
+remu a3, a4, a5
+rems a6, a7, a8
+l8ui a9, a10, 1
+l16ui a11, a12, 2
+l16si a13, a14, 4
+l32i a15, a2, 8
+l32i.n a3, a4, 12
+s8i a5, a6, 1
+s16i a7, a8, 2
+s32i a9, a10, 8
+s32i.n a11, a12, 12
+
+=== Xtensa ESP8266 instructions
+operation = assemble
+triple = xtensa-unknown-elf
+cpu = esp8266
+wasm_target = optional
+split = lines
+---
+nop
+ret
+ret.n
+movi a2, 1
+add a3, a4, a5
+addi a6, a7, 7
+sub a8, a9, a10
+and a11, a12, a13
+or a14, a15, a2
+xor a3, a4, a5
+l32i a6, a7, 8
+s32i a8, a9, 12
+
+=== Xtensa illegal instructions
+operation = assemble
+triple = xtensa-unknown-elf
+cpu = esp32
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_an_xtensa_instruction a2
+addi a2, a3, 999999
+
+=== Xtensa ESP32 disassembly
+operation = disassemble
+triple = xtensa-unknown-elf
+cpu = esp32
+wasm_target = optional
+split = lines
+---
+f0 20 00
+80 00 00
+0d f0
+10 20 00
+00 20 00
+30 20 00
+20 20 00
+c0 20 00
+d0 20 00
+00 50 00
+00 70 00
+2d 03
+42 a0 01
+7c 95
+80 67 80
+ba 9a
+c2 cd 07
+0b ef
+40 23 c0
+70 56 10
+
+=== Xtensa illegal disassembly
+operation = disassemble
+triple = xtensa-unknown-elf
+cpu = esp32
+wasm_target = optional
+expect = illegal
+---
+ff ff ff

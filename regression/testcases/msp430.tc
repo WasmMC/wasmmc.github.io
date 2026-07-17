@@ -1,0 +1,66 @@
+# Native LLVM supports MSP430; this WASM build does not currently include it.
+
+=== MSP430 instructions
+operation = assemble
+triple = msp430-unknown-unknown
+wasm_target = optional
+split = lines
+---
+nop
+ret
+reti
+eint
+dint
+clrc
+setc
+clrz
+setz
+clrn
+setn
+mov r4, r5
+mov r14, r15
+mov #1, r6
+add r4, r5
+addc r6, r7
+sub r8, r9
+subc r10, r11
+cmp r12, r13
+dadd r14, r15
+bit r4, r5
+bic r6, r7
+bis r8, r9
+xor r10, r11
+and r12, r13
+rrc r4
+rra r5
+swpb r6
+sxt r7
+push r8
+call r9
+
+=== MSP430 disassembly
+operation = disassemble
+triple = msp430-unknown-unknown
+wasm_target = optional
+split = lines
+---
+03 43
+30 41
+00 13
+32 d2
+32 c2
+03 c3
+03 d3
+03 93
+03 83
+05 44
+
+=== MSP430 illegal instructions
+operation = assemble
+triple = msp430-unknown-unknown
+wasm_target = optional
+expect = illegal
+split = lines
+---
+not_an_msp430_instruction r4
+mov r4, #1

@@ -1,0 +1,97 @@
+# eBPF little-/big-endian instruction coverage.
+
+=== BPF little-endian base ISA
+operation = assemble
+triple = bpfel-unknown-unknown
+cpu = v3
+split = lines
+---
+r0 = 0
+r1 = 1
+r2 = r3
+r4 += 7
+r5 += r6
+r7 -= 9
+r8 -= r9
+r0 *= 3
+r1 *= r2
+r3 /= 5
+r4 /= r5
+r6 |= 16
+r7 |= r8
+r9 &= 255
+r0 &= r1
+r2 <<= 3
+r3 <<= r4
+r5 >>= 7
+r6 >>= r7
+r8 ^= 31
+r9 ^= r0
+r1 s>>= 5
+r2 s>>= r3
+r4 = -r4
+w5 = 1
+w6 += 2
+w7 = w8
+r0 = *(u64 *)(r1 + 0)
+r2 = *(u32 *)(r3 + 4)
+r4 = *(u16 *)(r5 + 2)
+r6 = *(u8 *)(r7 + 1)
+*(u64 *)(r1 + 8) = r2
+*(u32 *)(r3 + 4) = r4
+*(u16 *)(r5 + 2) = r6
+*(u8 *)(r7 + 1) = r8
+if r1 == r2 goto +1
+if r3 != 7 goto +1
+if r4 > r5 goto +1
+if r6 >= 9 goto +1
+goto +1
+call 1
+exit
+
+=== BPF big-endian base ISA
+operation = assemble
+triple = bpf-unknown-unknown
+cpu = v3
+split = lines
+---
+r0 = 0
+r1 = 1
+r2 = r3
+r4 += 7
+r5 += r6
+r7 -= 9
+r8 -= r9
+r0 = *(u64 *)(r1 + 0)
+r2 = *(u32 *)(r3 + 4)
+*(u64 *)(r1 + 8) = r2
+if r1 == r2 goto +1
+goto +1
+call 1
+exit
+
+=== BPF little-endian disassembly
+operation = disassemble
+triple = bpfel-unknown-unknown
+cpu = v3
+split = lines
+---
+b7 00 00 00 00 00 00 00
+b7 01 00 00 01 00 00 00
+bf 32 00 00 00 00 00 00
+07 04 00 00 07 00 00 00
+0f 65 00 00 00 00 00 00
+17 07 00 00 09 00 00 00
+1f 98 00 00 00 00 00 00
+79 10 00 00 00 00 00 00
+61 32 04 00 00 00 00 00
+95 00 00 00 00 00 00 00
+
+=== BPF illegal instructions
+operation = assemble
+triple = bpfel-unknown-unknown
+expect = illegal
+split = lines
+---
+not_a_bpf_instruction
+r99 = 1

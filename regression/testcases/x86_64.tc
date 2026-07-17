@@ -1,0 +1,150 @@
+# AMD64 baseline instruction corpus. Each line is one independent test.
+
+=== x86_64 integer instructions
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+split = lines
+---
+nop
+int3
+clc
+stc
+cld
+std
+push rax
+push r8
+push r15
+pop rax
+pop r8
+pop r15
+mov rax, rbx
+mov r8, r9
+mov r14, r15
+mov eax, ebx
+mov ax, bx
+mov al, bl
+mov rax, 0
+mov rax, 1
+mov eax, 0x12345678
+movabs rax, 0x1122334455667788
+movzx eax, bl
+movzx eax, bx
+movsx rax, bl
+movsx rax, bx
+movsxd rax, ebx
+xchg rax, rbx
+xchg r8, r9
+lea rax, [rbx + rcx*8 + 16]
+lea r8, [rip + 32]
+add rax, rbx
+add r8, r9
+add rax, 1
+adc rcx, rdx
+sub rax, rbx
+sub r10, 127
+sbb r11, r12
+inc rax
+inc r8
+dec rbx
+dec r15
+neg rcx
+not rdx
+and rax, rbx
+and r8, 0xff
+or rcx, rdx
+xor rax, rax
+xor r14, r15
+cmp rax, rbx
+cmp r8, 42
+test rax, rax
+test r9, 0xff
+shl rax, 1
+shl r8, cl
+shr rcx, 3
+sar rdx, cl
+rol rax, 1
+ror r9, cl
+bt rax, rcx
+bts r8, 7
+btr r9, r10
+btc r11, 3
+bsf rax, rbx
+bsr r8, r9
+imul rax, rbx
+imul r8, r9, 7
+mul rcx
+div rbx
+idiv rcx
+cqo
+seta al
+setbe r8b
+sete cl
+setne r15b
+cmova rax, rbx
+cmove r8, r9
+cmovne r14, r15
+bswap rax
+bswap r8
+ret
+leave
+syscall
+cpuid
+
+=== x86_64 feature instructions
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+features = +avx,+avx2,+bmi,+bmi2,+aes,+adx
+intel_syntax = true
+split = lines
+---
+vaddps ymm0, ymm1, ymm2
+vpxor ymm3, ymm4, ymm5
+vpaddd ymm6, ymm7, ymm0
+andn rax, rbx, rcx
+bextr rdx, rsi, rdi
+blsi r8, r9
+mulx r10, r11, r12
+rorx r13, r14, 7
+pdep rax, rbx, rcx
+pext rdx, rsi, rdi
+aesenc xmm0, xmm1
+adcx rax, rbx
+adox rcx, rdx
+
+=== x86_64 illegal instructions
+operation = assemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+expect = illegal
+split = lines
+---
+not_an_x86_64_instruction rax
+mov rax, xmm0
+
+=== x86_64 disassembly
+operation = disassemble
+triple = x86_64-unknown-linux-gnu
+intel_syntax = true
+split = lines
+---
+90
+cc
+50
+41 50
+41 57
+58
+41 58
+41 5f
+48 89 d8
+4d 89 c8
+4d 89 fe
+89 d8
+66 89 d8
+88 d8
+48 c7 c0 00 00 00 00
+48 c7 c0 01 00 00 00
+48 0f be c3
+48 63 c3
+48 87 d8
+c3

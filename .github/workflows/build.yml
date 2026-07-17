@@ -1,0 +1,428 @@
+name: Build and verify WasmMC
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build_wasm:
+    name: Build WasmMC bundles (Linux ARM64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 330
+    outputs:
+      llvm-version: ${{ steps.llvm.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Read pinned LLVM version
+        id: llvm
+        run: |
+          echo "version=$(tr -d '[:space:]' < LLVM_VERSION)" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(tr -d '[:space:]' < LLVM_SHA256)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore compiled WasmMC bundles
+        id: wasm-binaries
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            build/llvm_backend.js
+            build/llvm_backend.wasm
+            build/llvm_backend_mainstream.js
+            build/llvm_backend_mainstream.wasm
+            build/llvm_backend_systems.js
+            build/llvm_backend_systems.wasm
+            build/llvm_backend_embedded.js
+            build/llvm_backend_embedded.wasm
+            build/target-inventory.json
+            build/llvm-targets.cmake
+          key: wasmmc-bundles-v2-llvm-${{ steps.llvm.outputs.version }}-em3164-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
+
+      - name: Setup Emscripten SDK
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        uses: emscripten-core/setup-emsdk@4528d102f7230f0e7b276855c01ea1159be0e984 # v16
+        with:
+          version: 3.1.64
+
+      - name: Verify Emscripten
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        run: |
+          test "$(uname -m)" = "aarch64"
+          emcc -v
+
+      - name: Install dependencies
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build xz-utils
+
+      - name: Cache LLVM source
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            build/_deps/llvm_project-src
+            build/_deps/llvm_project-subbuild
+          key: llvm-${{ steps.llvm.outputs.version }}-${{ steps.llvm.outputs.sha256 }}-wasm-src-${{ runner.os }}-${{ runner.arch }}
+          restore-keys: |
+            llvm-${{ steps.llvm.outputs.version }}-${{ steps.llvm.outputs.sha256 }}-wasm-src-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Cache LLVM WASM objects
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build/_deps/llvm_project-build
+          key: llvm-${{ steps.llvm.outputs.version }}-wasm-objects-em3164-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
+          restore-keys: |
+            llvm-${{ steps.llvm.outputs.version }}-wasm-objects-em3164-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Create clean top-level build directory
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p build
+          rm -f build/CMakeCache.txt build/build.ninja
+          rm -rf build/CMakeFiles
+
+      - name: Configure WASM bundles
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        run: |
+          cd build
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=MinSizeRel -G Ninja
+
+      - name: Build WasmMC bundles
+        if: steps.wasm-binaries.outputs.cache-hit != 'true'
+        run: |
+          cd build
+          emmake ninja -j"$(nproc)"
+
+      - name: Render release manifest
+        run: |
+          python3 scripts/render_backend_manifest.py \
+            --template llvm_backend_manifest.json.in \
+            --version-file LLVM_VERSION \
+            --output build/llvm_backend_manifest.json
+
+      - name: Verify and stage release artifacts
+        run: |
+          set -euo pipefail
+          for bundle in llvm_backend_mainstream llvm_backend_systems llvm_backend_embedded llvm_backend; do
+            test -s "build/${bundle}.js"
+            test -s "build/${bundle}.wasm"
+          done
+          test -s build/llvm_backend_manifest.json
+          python3 scripts/stage_site.py \
+            --web-dir web --build-dir build --site-dir dist --full-dir full-dist \
+            --legal-dir .
+          test "$(find dist -maxdepth 1 -name 'llvm_backend_manifest.*.json' | wc -l)" -eq 1
+          test ! -e dist/llvm_backend.js
+          test ! -e 'dist/dummy 11th.txt'
+          test -s dist/LICENSE
+          test -s dist/THIRD_PARTY_NOTICES.md
+          test -s full-dist/LICENSE
+          test -s full-dist/THIRD_PARTY_NOTICES.md
+          ls -lh dist
+          ls -lh full-dist
+
+      - name: Validate frontend and policy scripts
+        run: |
+          node --check web/app.js
+          node --check web/backend-manager.js
+          node --check web/backend-worker.js
+          python3 regression/test_release_checker.py
+          python3 regression/test_target_inventory.py
+          python3 regression/test_reporting.py
+          python3 regression/test_site_staging.py
+          python3 regression/test_manifest_renderer.py
+          python3 regression/test_build_cache_policy.py
+          python3 regression/test_deployment_policy.py
+          python3 regression/test_frontend_hardening.py
+          python3 regression/test_supply_chain_policy.py
+          python3 regression/test_text_policy.py
+
+      - name: Run backend integration tests
+        env:
+          LLVM_WEB_ROOT: dist
+          REQUIRE_IMM_HEX: "1"
+        run: |
+          node regression/test_frontend_escape.mjs
+          node regression/test_backend_integration.mjs
+          node regression/test_backend_lifecycle.mjs
+
+      - name: Upload deployable site
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ steps.llvm.outputs.version }}-site
+          path: dist/
+          include-hidden-files: true
+
+      - name: Upload optional full backend
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ steps.llvm.outputs.version }}-full-backend
+          path: full-dist/
+
+      - name: Upload WasmMC build metadata
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ steps.llvm.outputs.version }}-build-metadata
+          if-no-files-found: warn
+          path: |
+            build/target-inventory.json
+            build/llvm-targets.cmake
+
+  build_native:
+    name: Build pinned native llvm-mc reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    outputs:
+      llvm-version: ${{ steps.llvm.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Read pinned LLVM version
+        id: llvm
+        run: |
+          echo "version=$(tr -d '[:space:]' < LLVM_VERSION)" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(tr -d '[:space:]' < LLVM_SHA256)" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build xz-utils
+
+      - name: Cache native LLVM source
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: native-source
+          key: llvm-${{ steps.llvm.outputs.version }}-${{ steps.llvm.outputs.sha256 }}-native-src-${{ runner.os }}
+
+      - name: Download pinned LLVM source
+        run: |
+          if [[ ! -s native-source/llvm/CMakeLists.txt ]]; then
+            rm -rf native-source
+            mkdir -p native-source
+            curl -fL --retry 3 \
+              "https://github.com/llvm/llvm-project/releases/download/llvmorg-${{ steps.llvm.outputs.version }}/llvm-project-${{ steps.llvm.outputs.version }}.src.tar.xz" \
+              -o /tmp/llvm-project.tar.xz
+            echo "${{ steps.llvm.outputs.sha256 }}  /tmp/llvm-project.tar.xz" | sha256sum --check --strict
+            tar -xJf /tmp/llvm-project.tar.xz -C native-source --strip-components=1
+          fi
+          test -s native-source/llvm/CMakeLists.txt
+
+      - name: Verify LLVM target inventory
+        run: |
+          mkdir -p native-artifacts
+          python3 scripts/check_llvm_targets.py \
+            --llvm-cmake native-source/llvm/CMakeLists.txt \
+            --llvm-version "${{ steps.llvm.outputs.version }}" \
+            --inventory regression/llvm-target-inventory.json \
+            --report native-artifacts/target-inventory.json \
+            --cmake-cache native-artifacts/llvm-targets.cmake
+
+      - name: Cache native LLVM objects
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: native-build
+          key: llvm-${{ steps.llvm.outputs.version }}-native-mc-v3-${{ runner.os }}-${{ hashFiles('LLVM_VERSION', 'LLVM_SHA256', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
+          restore-keys: |
+            llvm-${{ steps.llvm.outputs.version }}-native-mc-v3-${{ runner.os }}-
+
+      - name: Configure pinned native LLVM MC
+        run: |
+          cmake -S native-source/llvm -B native-build -G Ninja \
+            -C native-artifacts/llvm-targets.cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_BUILD_TOOLS=ON \
+            -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_EXAMPLES=OFF \
+            -DLLVM_INCLUDE_BENCHMARKS=OFF \
+            -DLLVM_ENABLE_ZLIB=OFF \
+            -DLLVM_ENABLE_ZSTD=OFF \
+            -DLLVM_ENABLE_LIBXML2=OFF
+
+      - name: Build and package native llvm-mc
+        run: |
+          cmake --build native-build --target llvm-mc --parallel "$(nproc)"
+          native-build/bin/llvm-mc --version
+          native-build/bin/llvm-mc --version | grep -F "LLVM version ${{ steps.llvm.outputs.version }}"
+          tar -czf native-artifacts/llvm-mc.tar.gz -C native-build/bin llvm-mc
+
+      - name: Upload native llvm-mc
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ steps.llvm.outputs.version }}-native-llvm-mc
+          path: native-artifacts/
+
+      - name: Upload native build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ steps.llvm.outputs.version }}-native-build-diagnostics
+          if-no-files-found: warn
+          path: native-artifacts/
+
+  regression:
+    name: Run native-versus-WASM regression
+    needs: [build_wasm, build_native]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Download WASM site
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wasmmc-${{ needs.build_wasm.outputs.llvm-version }}-site
+          path: dist
+
+      - name: Download optional full backend
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wasmmc-${{ needs.build_wasm.outputs.llvm-version }}-full-backend
+          path: full-dist
+
+      - name: Download native llvm-mc
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wasmmc-${{ needs.build_native.outputs.llvm-version }}-native-llvm-mc
+          path: native-artifact
+
+      - name: Prepare native llvm-mc
+        run: |
+          mkdir -p native-bin reports
+          tar -xzf native-artifact/llvm-mc.tar.gz -C native-bin
+          chmod +x native-bin/llvm-mc
+          native-bin/llvm-mc --version
+          cp native-artifact/target-inventory.json reports/target-inventory.json
+
+      - name: Run complete regression and write reports
+        run: |
+          set +e
+          status=0
+
+          mainstream_js=$(python3 scripts/site_asset.py dist mainstream js) || exit 1
+          systems_js=$(python3 scripts/site_asset.py dist systems js) || exit 1
+          embedded_js=$(python3 scripts/site_asset.py dist embedded js) || exit 1
+
+          python3 regression/compare.py regression/testcases \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js full-dist/llvm_backend.js --bundle full \
+            --json-report reports/full.json -q || status=1
+
+          python3 regression/compare.py regression/testcases \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$mainstream_js" --bundle mainstream \
+            --json-report reports/mainstream.json -q || status=1
+
+          python3 regression/compare.py regression/testcases \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$systems_js" --bundle systems \
+            --json-report reports/systems.json -q || status=1
+
+          python3 regression/compare.py regression/testcases \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$embedded_js" --bundle embedded \
+            --json-report reports/embedded.json -q || status=1
+
+          python3 regression/compare.py regression/policies/feature_enforcement.tc \
+            --suite-name feature-enforcement \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js full-dist/llvm_backend.js --bundle full \
+            --known-differences regression/known_differences.json \
+            --json-report reports/feature-enforcement-full.json -q || status=1
+
+          python3 regression/compare.py regression/policies/feature_enforcement.tc \
+            --suite-name feature-enforcement \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$mainstream_js" --bundle mainstream \
+            --known-differences regression/known_differences.json \
+            --json-report reports/feature-enforcement-mainstream.json -q || status=1
+
+          python3 regression/compare.py regression/policies/feature_enforcement.tc \
+            --suite-name feature-enforcement \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$systems_js" --bundle systems \
+            --known-differences regression/known_differences.json \
+            --json-report reports/feature-enforcement-systems.json -q || status=1
+
+          python3 regression/compare.py regression/policies/feature_enforcement.tc \
+            --suite-name feature-enforcement \
+            --llvm-mc native-bin/llvm-mc \
+            --backend-js "$embedded_js" --bundle embedded \
+            --known-differences regression/known_differences.json \
+            --json-report reports/feature-enforcement-embedded.json -q || status=1
+
+          python3 regression/report_summary.py \
+            reports/full.json reports/mainstream.json reports/systems.json \
+            reports/embedded.json reports/feature-enforcement-full.json \
+            reports/feature-enforcement-mainstream.json \
+            reports/feature-enforcement-systems.json \
+            reports/feature-enforcement-embedded.json \
+            --markdown reports/summary.md || status=1
+
+          if [[ -s reports/summary.md ]]; then
+            cat reports/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
+
+      - name: Upload regression reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasmmc-${{ needs.build_wasm.outputs.llvm-version }}-regression-reports
+          if-no-files-found: warn
+          path: reports/
+
+  deploy_pages:
+    name: Deploy verified site to GitHub Pages
+    needs: [build_wasm, regression]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.event.repository.private == false || vars.ENABLE_PRIVATE_PAGES == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Download verified site artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wasmmc-${{ needs.build_wasm.outputs.llvm-version }}-site
+          path: dist
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: dist
+          include-hidden-files: true
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5

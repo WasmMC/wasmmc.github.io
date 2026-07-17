@@ -1,0 +1,87 @@
+# SPARC V8/V9 instruction coverage.
+
+=== SPARC V8 integer
+operation = assemble
+triple = sparc-unknown-linux-gnu
+cpu = v8
+split = lines
+---
+nop
+sethi 0x12345, %g1
+add %g1, %g2, %g3
+add %g4, 7, %g5
+addcc %g6, %g7, %o0
+addx %o1, %o2, %o3
+sub %o4, %o5, %l0
+subcc %l1, %l2, %l3
+subx %l4, %l5, %l6
+and %l7, %i0, %i1
+andn %i2, %i3, %i4
+or %i5, %i6, %i7
+orn %g1, %g2, %g3
+xor %g4, %g5, %g6
+xnor %g7, %o0, %o1
+sll %o2, 3, %o3
+srl %o4, 7, %o5
+sra %l0, 11, %l1
+umul %l2, %l3, %l4
+smul %l5, %l6, %l7
+udiv %i0, %i1, %i2
+sdiv %i3, %i4, %i5
+ld [%g1], %g2
+ldub [%g3 + 1], %g4
+lduh [%g5 + 2], %g6
+st %g7, [%o0 + 4]
+stb %o1, [%o2 + 1]
+sth %o3, [%o4 + 2]
+swap [%o5], %l0
+save %sp, -96, %sp
+restore
+retl
+ta 1
+
+=== SPARC V9 integer
+operation = assemble
+triple = sparcv9-unknown-linux-gnu
+cpu = v9
+split = lines
+---
+nop
+add %g1, %g2, %g3
+sub %g4, %g5, %g6
+sllx %g7, 3, %o0
+srlx %o1, 7, %o2
+srax %o3, 11, %o4
+mulx %o5, %l0, %l1
+udivx %l2, %l3, %l4
+sdivx %l5, %l6, %l7
+ldx [%i0], %i1
+stx %i2, [%i3 + 8]
+ldsw [%i4 + 4], %i5
+casx [%i6], %i7, %g1
+return %i7 + 8
+retl
+
+=== SPARC V8 disassembly
+operation = disassemble
+triple = sparc-unknown-linux-gnu
+cpu = v8
+split = lines
+---
+01 00 00 00
+86 00 40 02
+8a 01 20 07
+90 81 80 07
+a0 23 00 0d
+a6 a4 40 12
+b2 0d c0 18
+96 2a 80 0a
+
+=== SPARC illegal instructions
+operation = assemble
+triple = sparc-unknown-linux-gnu
+expect = illegal
+split = lines
+---
+not_a_sparc_instruction %g1
+sll %g1, 99, %g2

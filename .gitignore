@@ -1,0 +1,6 @@
+/build/
+/dist/
+/full-dist/
+/reports/
+__pycache__/
+*.pyc

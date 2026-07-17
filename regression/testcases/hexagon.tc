@@ -1,0 +1,63 @@
+# Qualcomm Hexagon scalar instruction coverage.
+
+=== Hexagon scalar instructions
+operation = assemble
+triple = hexagon-unknown-linux-musl
+cpu = hexagonv60
+split = lines
+---
+r0 = #0
+r1 = #1
+r2 = #-1
+r3 = add(r4, r5)
+r6 = sub(r7, r8)
+r9 = and(r10, r11)
+r12 = or(r13, r14)
+r15 = xor(r16, r17)
+r18 = not(r19)
+r20 = neg(r21)
+r22 = add(r23, #7)
+r24 = add(r25, #-9)
+r26 = asl(r27, #3)
+r28 = lsr(r29, #7)
+r30 = asr(r0, #11)
+r1 = mpyi(r2, r3)
+r4 = max(r5, r6)
+r7 = min(r8, r9)
+r10 = abs(r11)
+r12 = cl0(r13)
+r14 = cl1(r15)
+p0 = cmp.eq(r0, r1)
+p1 = cmp.gt(r2, r3)
+p2 = cmp.gtu(r4, r5)
+r6 = mux(p0, r7, r8)
+r9 = memw(r10+#0)
+r11 = memuh(r12+#2)
+r13 = memub(r14+#1)
+memw(r15+#4) = r16
+memh(r17+#2) = r18
+memb(r19+#1) = r20
+jumpr r31
+
+=== Hexagon disassembly
+operation = disassemble
+triple = hexagon-unknown-linux-musl
+cpu = hexagonv60
+split = lines
+---
+00 c0 00 78
+01 c0 00 78
+ff df 00 78
+03 c5 04 f3
+06 c8 07 f3
+09 cb 0a f3
+00 c2 01 f3
+
+=== Hexagon illegal instructions
+operation = assemble
+triple = hexagon-unknown-linux-musl
+expect = illegal
+split = lines
+---
+not_a_hexagon_instruction
+r0 = add(r1, p0)
