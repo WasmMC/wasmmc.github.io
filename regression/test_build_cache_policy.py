@@ -7,9 +7,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github" / "workflows" / "build.yml").read_text(encoding="utf-8")
+cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
 emscripten_version = (ROOT / "EMSCRIPTEN_VERSION").read_text(encoding="utf-8").strip()
 
 assert re.fullmatch(r"\d+\.\d+\.\d+", emscripten_version)
+assert "-sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString,HEAPU8" in cmake
 
 required = (
     "id: wasm-binaries",

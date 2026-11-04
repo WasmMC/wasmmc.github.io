@@ -176,7 +176,7 @@ function(add_llvm_wasm_bundle target)
     set_property(TARGET ${target} PROPERTY JOB_POOL_LINK wasm_link_pool)
     target_link_options(${target} PRIVATE
     -sEXPORTED_FUNCTIONS=_get_target_capabilities,_assemble_string,_disassemble_bytes,_disassemble_bytes_ex,_disassemble_bytes_ex2,_free_result,_malloc,_free
-    -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString
+    -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString,HEAPU8
     -sMODULARIZE=1
     "-sEXPORT_NAME='${BUNDLE_EXPORT_NAME}'"
     -sALLOW_MEMORY_GROWTH=1
