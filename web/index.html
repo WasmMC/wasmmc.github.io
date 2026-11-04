@@ -123,6 +123,11 @@ body.is-dragging .drag-overlay{display:flex}
 .baddr-input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:11px;padding:3px 8px;width:140px;outline:none;transition:border-color .15s}
 .baddr-input:focus{border-color:var(--accent)}
 [data-theme="light"] .baddr-input{background:var(--surface2)}
+.binary-window-row{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:8px;padding:7px 9px;background:var(--accent-dim);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--text2)}
+.binary-window-row[hidden]{display:none}
+.binary-window-row label{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+.binary-window-summary{font-family:var(--mono);margin-right:auto;overflow-wrap:anywhere}
+.binary-window-input{width:88px}
 .run-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;width:140px;height:30px;margin-top:12px;flex-shrink:0;transition:opacity .15s,transform .1s;white-space:nowrap}
 .run-btn:hover:not(:disabled){opacity:.85}.run-btn:active:not(:disabled){transform:scale(.97)}.run-btn:disabled{opacity:.35;cursor:not-allowed}
 .output-section{margin-top:14px}
@@ -139,6 +144,7 @@ body.is-dragging .drag-overlay{display:flex}
 .col-bytes{color:var(--col-bytes);padding-right:14px;white-space:nowrap;min-width:100px}
 .col-mnem{color:var(--col-mnem);padding-right:8px;white-space:nowrap}.col-ops{color:var(--col-ops)}
 .row-pseudo .col-mnem{color:var(--col-pseudo)}.row-pseudo .col-bytes{opacity:.55}
+.render-limit-notice{margin-top:9px;padding-top:7px;border-top:1px solid var(--border);color:var(--warn);font-family:var(--sans);font-size:11px;white-space:normal;word-break:normal}
 .copy-btn{position:absolute;top:7px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-size:10px;padding:2px 7px;opacity:0;transition:opacity .15s,color .15s;font-family:var(--sans)}
 .output-box:hover .copy-btn{opacity:1}.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
 .stat-line{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
@@ -160,7 +166,7 @@ body.is-dragging .drag-overlay{display:flex}
 </style>
 </head>
 <body>
-<div class="drag-overlay">Drop binary to disassemble (Max 500KB)</div>
+<div class="drag-overlay">Drop binary to disassemble (max 500 KiB)</div>
 <div class="page">
   <div class="topbar">
     <div class="topbar-left">

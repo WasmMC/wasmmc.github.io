@@ -582,6 +582,7 @@ let panelCount = 0;
 const panelState = {};
 const liveTimers = {};
 let workspaceSaveTimer = null;
+const MAX_RENDER_ROWS=10000;
 
 const LAYOUTS = ['auto','side','stack'];
 let layoutIdx = parseInt(savedValue('layoutIdx','0'),10)||0;
@@ -799,20 +800,59 @@ document.addEventListener('dragleave',e=>{if(e.clientX===0||e.clientY===0)docume
 document.addEventListener('drop',async e=>{
   e.preventDefault(); document.body.classList.remove('is-dragging');
   const file=e.dataTransfer.files[0]; if(!file) return;
-  if(file.size>500*1024){alert('File too large. Max 500KB.');return;}
+  if(file.size>window.WasmMCByteInput.MAX_FILE_BYTES){alert('File too large. Max 500 KiB.');return;}
+  if(file.size<1){alert('The selected file is empty.');return;}
   const bytes=new Uint8Array(await file.arrayBuffer());
-  let hex=''; for(let i=0;i<bytes.length;i++) hex+=bytes[i].toString(16).padStart(2,'0')+' ';
   const wrap=e.target.closest('.panel-wrap');
   let id=wrap?wrap.id.replace('wrap-',''):null;
   if(!id||!panelState[id]||panelState[id].type!=='dis') id=addPanel('dis');
-  const ta=document.getElementById(`dis-in-${id}`);
-  if(ta){
-    ta.value=hex.trim();
-    const sub=document.getElementById(`dis-title-sub-${id}`);
-    if(sub) sub.textContent=file.name;
-    queueSave(); if(liveMode&&llvmMod) scheduleRun(id,'dis');
-  }
+  const st=panelState[id];
+  st.binarySource={name:file.name,bytes,offset:0,
+    length:Math.min(bytes.length,window.WasmMCByteInput.DEFAULT_FILE_WINDOW_BYTES)};
+  const sub=document.getElementById(`dis-title-sub-${id}`);
+  if(sub) sub.textContent=file.name;
+  updateBinaryWindowControls(id);
+  applyBinaryWindow(id);
 });
+
+function clearBinarySource(id){
+  const st=panelState[id];
+  if(!st?.binarySource) return;
+  st.binarySource=null;
+  const row=document.getElementById(`dis-window-${id}`);
+  if(row) row.hidden=true;
+}
+
+function updateBinaryWindowControls(id){
+  const source=panelState[id]?.binarySource;
+  const row=document.getElementById(`dis-window-${id}`);
+  if(!source||!row) return;
+  row.hidden=false;
+  document.getElementById(`dis-window-offset-${id}`).value=String(source.offset);
+  document.getElementById(`dis-window-length-${id}`).value=String(source.length);
+  const last=source.offset+source.length-1;
+  document.getElementById(`dis-window-summary-${id}`).textContent=
+    `${source.name}: bytes ${source.offset.toLocaleString()}-${last.toLocaleString()} of ${source.bytes.length.toLocaleString()}`;
+}
+
+function applyBinaryWindow(id){
+  const st=panelState[id], source=st?.binarySource;
+  if(!source) return;
+  try{
+    const offset=window.WasmMCByteInput.parseWindowValue(
+      document.getElementById(`dis-window-offset-${id}`).value,'Offset');
+    const length=window.WasmMCByteInput.parseWindowValue(
+      document.getElementById(`dis-window-length-${id}`).value,'Length');
+    const range=window.WasmMCByteInput.clampFileWindow(source.bytes.length,offset,length);
+    source.offset=range.offset; source.length=range.length;
+  }catch(error){alert(error.message);return;}
+  const windowBytes=source.bytes.subarray(source.offset,source.offset+source.length);
+  document.getElementById(`dis-in-${id}`).value=
+    Array.from(windowBytes,byte=>byte.toString(16).padStart(2,'0')).join(' ');
+  updateBinaryWindowControls(id);
+  queueSave();
+  if(liveMode&&llvmMod) scheduleRun(id,'dis');
+}
 
 // ── Arch options panel builder ────────────────────────────────────────────────
 function buildOptsHTML(id, type, archKey, state) {
@@ -971,6 +1011,12 @@ function buildDisPanel(id, defArch, initText, initBaddr, initShow, initTitle, in
     <textarea class="asm-textarea dis-textarea" id="dis-in-${id}" rows="6"
       spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"
       placeholder="c0 03 5f d6&#10;e0 03 01 aa&#10;00 00 01 8b">${esc(initText||'')}</textarea>
+    <div class="binary-window-row" id="dis-window-${id}" hidden>
+      <span class="binary-window-summary" id="dis-window-summary-${id}"></span>
+      <label>Offset <input type="text" class="baddr-input binary-window-input" id="dis-window-offset-${id}" value="0" inputmode="numeric"></label>
+      <label>Length <input type="text" class="baddr-input binary-window-input" id="dis-window-length-${id}" value="${window.WasmMCByteInput.DEFAULT_FILE_WINDOW_BYTES}" inputmode="numeric"></label>
+      <button class="tog-btn" id="dis-window-apply-${id}" type="button">Apply range</button>
+    </div>
     <div class="arch-row" id="dis-archs-${id}">${archButtonsHTML(defArch)}</div>
     <div id="dis-opts-${id}">${buildOptsHTML(id,'dis',defArch,initState||{})}</div>
     <div class="opts-row" style="margin-top:9px">
@@ -1040,6 +1086,7 @@ function addPanel(type, initState=null) {
     printerCapabilities:new Set(initState?.printerCapabilities||[]),
     requestGeneration:0, outputGeneration:0,
     asmBytes: null, disInsns: null, disBytes: null,
+    binarySource:null,
   };
 
   const wrap = document.createElement('div');
@@ -1137,9 +1184,14 @@ function addPanel(type, initState=null) {
       if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doDisassemble(id);}
     });
     wrap.querySelector('.dis-textarea').addEventListener('input',()=>{
+      clearBinarySource(id);
       queueSave(); if(liveMode&&llvmMod) scheduleRun(id,'dis');
     });
-    wrap.querySelector('.baddr-input').addEventListener('input',()=>{
+    wrap.querySelector(`#dis-window-apply-${id}`).addEventListener('click',()=>applyBinaryWindow(id));
+    wrap.querySelectorAll('.binary-window-input').forEach(input=>input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();applyBinaryWindow(id);}
+    }));
+    wrap.querySelector(`#dis-baddr-${id}`).addEventListener('input',()=>{
       queueSave(); if(liveMode&&llvmMod) scheduleRun(id,'dis');
     });
     initTabsWithToggle(wrap,'dis-tabs-'+id,['hex','inline'],['pretty'],t=>{
@@ -1364,6 +1416,7 @@ function doDisassemble(id) {
   let baseAddr=0;
   const rawBaddr=document.getElementById('dis-baddr-'+id).value;
   if(rawBaddr) baseAddr=parseMathBase(rawBaddr);
+  if(st.binarySource) baseAddr+=st.binarySource.offset;
 
   setTimeout(async()=>{
     if(panelState[id]!==st||st.requestGeneration!==requestGeneration)return;
@@ -1385,6 +1438,7 @@ function doDisassemble(id) {
     const real=insns.filter(i=>!i.pseudo).length, pseudo=insns.filter(i=>i.pseudo).length;
     let stat=real+' instruction'+(real!==1?'s':'')+', '+bytes.length+' byte'+(bytes.length!==1?'s':'');
     if(pseudo) stat+=' ('+pseudo+' unknown byte'+(pseudo!==1?'s':'')+')';
+    if(insns.length>MAX_RENDER_ROWS) stat+=' (showing first '+MAX_RENDER_ROWS.toLocaleString()+' rows)';
     document.getElementById('dis-stat-'+id).textContent=stat;
     renderDisOutput(id);
   },10);
@@ -1433,14 +1487,18 @@ function renderDisOutput(id) {
 
 function renderListing(insns, show) {
   if(!insns?.length) return '<span style="color:var(--muted)">No instructions</span>';
-  const rows=insns.map(ins=>{
+  const visible=insns.slice(0,MAX_RENDER_ROWS);
+  const rows=visible.map(ins=>{
     const rc=ins.pseudo?' class="row-pseudo"':''; let cols='';
     if(show.has('addr'))  cols+='<td class="col-addr">0x'+ins.address.toString(16).padStart(8,'0')+'</td>';
     if(show.has('bytes')) cols+='<td class="col-bytes">'+ins.bytes.map(b=>b.toString(16).padStart(2,'0').toUpperCase()).join(' ')+'</td>';
     if(show.has('ins'))   cols+='<td class="col-mnem">'+esc(ins.mnemonic)+'</td><td class="col-ops">'+esc(ins.op_str)+'</td>';
     return '<tr'+rc+'>'+cols+'</tr>';
   });
-  return '<table class="dis-table">'+rows.join('')+'</table>';
+  const notice=insns.length>visible.length
+    ? '<div class="render-limit-notice">Rendering limited to the first '+visible.length.toLocaleString()+' of '+insns.length.toLocaleString()+' rows. Select a smaller binary range to inspect the remainder.</div>'
+    : '';
+  return '<table class="dis-table">'+rows.join('')+'</table>'+notice;
 }
 
 // ── Live / tabs / close ───────────────────────────────────────────────────────

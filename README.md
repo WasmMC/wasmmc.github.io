@@ -22,7 +22,8 @@ the selected architecture needs it.
 - Paste any of those byte formats back into the disassembler.
 - Decode incomplete input while preserving unknown bytes as `.byte` rows.
 - Use multiple assembler and disassembler panels with responsive layouts.
-- Drag a raw binary of up to 500 KiB into a disassembler panel.
+- Drag a raw binary of up to 500 KiB into a disassembler panel, then select a
+  bounded offset and length without rendering the entire file at once.
 - Share a workspace through the URL or opt into local browser persistence.
 - Load target bundles lazily and unload idle bundles.
 

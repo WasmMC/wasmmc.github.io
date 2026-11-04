@@ -13,6 +13,11 @@ assert ".replace(/'/g,'&#39;')" in app
 assert "requestGeneration:0" in app
 assert app.count("st.requestGeneration!==requestGeneration") >= 6
 assert "st.outputGeneration!==outputGeneration" in app
+assert "const MAX_RENDER_ROWS=10000" in app
+assert "insns.slice(0,MAX_RENDER_ROWS)" in app
+assert "clampFileWindow(source.bytes.length,offset,length)" in app
+assert "if(st.binarySource) baseAddr+=st.binarySource.offset" in app
+assert "wrap.querySelector(`#dis-baddr-${id}`)" in app
 assert "await existing.ready" in manager
 assert "backend.ready = this.callBackend" in manager
 assert "this.backends.delete(bundleName)" in manager
