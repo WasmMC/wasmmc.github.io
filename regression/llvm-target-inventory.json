@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "llvm_version": "22.1.8",
+  "llvm_version": "23.1.5",
   "stable": [
     "AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai",
     "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV",
