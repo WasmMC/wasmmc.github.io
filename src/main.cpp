@@ -122,7 +122,7 @@ char* get_target_capabilities(const char* target_triple, const char* cpu) {
     for (const auto& processor : STI->getAllProcessorDescriptions()) {
         if (!first) os << ',';
         first = false;
-        os << "\"" << json_escape(processor.Key) << "\"";
+        os << "\"" << json_escape(processor.key()) << "\"";
     }
     os << "],\"features\":[";
 
@@ -130,8 +130,8 @@ char* get_target_capabilities(const char* target_triple, const char* cpu) {
     for (const auto& feature : STI->getAllProcessorFeatures()) {
         if (!first) os << ',';
         first = false;
-        os << "{\"name\":\"" << json_escape(feature.Key)
-           << "\",\"description\":\"" << json_escape(feature.Desc)
+        os << "{\"name\":\"" << json_escape(feature.key())
+           << "\",\"description\":\"" << json_escape(feature.desc())
            << "\",\"enabled\":" << (STI->hasFeature(feature.Value) ? "true" : "false")
            << '}';
     }
