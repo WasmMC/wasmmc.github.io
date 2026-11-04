@@ -15,17 +15,18 @@ python3 regression/compare.py regression/policies/feature_enforcement.tc \
 
 ## Current result
 
-LLVM 22.1.8 native and WASM agree on 37 of 38 cases covering ARM, AArch64,
+LLVM 23.1.5 native and WASM agree on 37 of 38 cases covering ARM, AArch64,
 RISC-V, MIPS, SPARC, Hexagon, LoongArch, x86, PPC, BPF, and Thumb.
 
-The sole mismatch is the ARMv7 NEON baseline case:
+The sole known policy exception is the ARMv7 NEON baseline case:
 
-- Native `llvm-mc-22 -mcpu=generic` rejects `vadd.i32 q0, q1, q2` unless NEON
-  or MVE is enabled.
-- WASM accepts the instruction when no feature string is supplied.
+- With no feature string, matching native and WASM builds may both accept the
+  instruction despite the baseline rejection policy.
+- Other matching builds reject it natively and accept it in WASM.
 - Both reject it when passed `-neon,-mve` explicitly.
 - Both accept it with `+neon` and emit the same bytes.
 
-This isolates the difference to the WASM build's unspecified ARM default
-feature mask. It does not indicate a parser or encoder mismatch. The browser's
-success-based probe cannot infer `+neon` when that baseline succeeds.
+This isolates the difference to the unspecified ARM default feature mask. It
+does not indicate a parser or encoder mismatch. The browser's success-based
+probe cannot infer `+neon` when that baseline succeeds. The allowlist accepts
+only the two exact observed signatures; any third behavior remains a failure.
