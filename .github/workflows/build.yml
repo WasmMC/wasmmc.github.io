@@ -31,6 +31,11 @@ jobs:
           echo "version=$(tr -d '[:space:]' < LLVM_VERSION)" >> "$GITHUB_OUTPUT"
           echo "sha256=$(tr -d '[:space:]' < LLVM_SHA256)" >> "$GITHUB_OUTPUT"
 
+      - name: Read pinned Emscripten version
+        id: emscripten
+        run: |
+          echo "version=$(tr -d '[:space:]' < EMSCRIPTEN_VERSION)" >> "$GITHUB_OUTPUT"
+
       - name: Restore compiled WasmMC bundles
         id: wasm-binaries
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
@@ -46,19 +51,20 @@ jobs:
             build/llvm_backend_embedded.wasm
             build/target-inventory.json
             build/llvm-targets.cmake
-          key: wasmmc-bundles-v2-llvm-${{ steps.llvm.outputs.version }}-em3164-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
+          key: wasmmc-bundles-v2-llvm-${{ steps.llvm.outputs.version }}-emscripten-${{ steps.emscripten.outputs.version }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
 
       - name: Setup Emscripten SDK
         if: steps.wasm-binaries.outputs.cache-hit != 'true'
         uses: emscripten-core/setup-emsdk@4528d102f7230f0e7b276855c01ea1159be0e984 # v16
         with:
-          version: 3.1.64
+          version: ${{ steps.emscripten.outputs.version }}
 
       - name: Verify Emscripten
         if: steps.wasm-binaries.outputs.cache-hit != 'true'
         run: |
           test "$(uname -m)" = "aarch64"
           emcc -v
+          emcc --version | grep -F "${{ steps.emscripten.outputs.version }}"
 
       - name: Install dependencies
         if: steps.wasm-binaries.outputs.cache-hit != 'true'
@@ -82,9 +88,9 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/_deps/llvm_project-build
-          key: llvm-${{ steps.llvm.outputs.version }}-wasm-objects-em3164-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
+          key: llvm-${{ steps.llvm.outputs.version }}-wasm-objects-emscripten-${{ steps.emscripten.outputs.version }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json') }}
           restore-keys: |
-            llvm-${{ steps.llvm.outputs.version }}-wasm-objects-em3164-${{ runner.os }}-${{ runner.arch }}-
+            llvm-${{ steps.llvm.outputs.version }}-wasm-objects-emscripten-${{ steps.emscripten.outputs.version }}-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Create clean top-level build directory
         if: steps.wasm-binaries.outputs.cache-hit != 'true'
