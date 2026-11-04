@@ -40,7 +40,10 @@ with tempfile.TemporaryDirectory() as temporary:
     web.mkdir()
     build.mkdir()
 
-    for name in ("index.html", "app.js", "backend-manager.js", "backend-worker.js", "favicon.svg"):
+    for name in (
+        "index.html", "app.js", "byte-input.js", "backend-manager.js",
+        "backend-worker.js", "favicon.svg",
+    ):
         shutil.copyfile(ROOT / "web" / name, web / name)
     (web / "dummy 11th.txt").write_text("must not ship", encoding="utf-8")
 
@@ -98,10 +101,12 @@ with tempfile.TemporaryDirectory() as temporary:
     index = (site / "index.html").read_text(encoding="utf-8")
     assert summary["config"] in index
     assert summary["frontend"]["app.js"] in index
+    assert summary["frontend"]["byte-input.js"] in index
     assert summary["frontend"]["backend-manager.js"] in index
     assert summary["frontend"]["favicon.svg"] in index
     assert (site / summary["frontend"]["favicon.svg"]).is_file()
     assert '<script src="app.js">' not in index
+    assert '<script src="byte-input.js">' not in index
     assert '<script src="backend-manager.js">' not in index
     assert 'href="favicon.svg"' not in index
     assert 'href="THIRD_PARTY_NOTICES.md"' in index

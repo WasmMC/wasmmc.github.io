@@ -1357,11 +1357,9 @@ function doDisassemble(id) {
   const outEl = document.getElementById('dis-out-'+id);
   if (!raw||!outEl) { if(sec) sec.style.display='none'; return; }
 
-  const cleaned=raw.replace(/[^0-9a-fA-F]/g,'');
-  if(cleaned.length%2!==0){ showErr(outEl,'Odd number of hex digits.'); sec.style.display=''; return; }
-  const bytes=new Uint8Array(cleaned.length/2);
-  for(let i=0;i<bytes.length;i++) bytes[i]=parseInt(cleaned.slice(i*2,i*2+2),16);
-  if(!bytes.length){ showErr(outEl,'No bytes parsed.'); sec.style.display=''; return; }
+  let bytes;
+  try { bytes=window.WasmMCByteInput.parse(raw); }
+  catch(error) { showErr(outEl,error.message); sec.style.display=''; return; }
 
   let baseAddr=0;
   const rawBaddr=document.getElementById('dis-baddr-'+id).value;

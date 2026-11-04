@@ -19,6 +19,7 @@ the selected architecture needs it.
 - Switch ARM, RISC-V, and LoongArch register naming styles.
 - Display bytes as hexadecimal, `\xNN` escape sequences, Python bytes literals,
   or C arrays.
+- Paste any of those byte formats back into the disassembler.
 - Decode incomplete input while preserving unknown bytes as `.byte` rows.
 - Use multiple assembler and disassembler panels with responsive layouts.
 - Drag a raw binary of up to 500 KiB into a disassembler panel.
