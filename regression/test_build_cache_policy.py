@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 """Check that frontend-only changes can reuse exact compiled WASM bundles."""
 
+import re
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github" / "workflows" / "build.yml").read_text(encoding="utf-8")
+emscripten_version = (ROOT / "EMSCRIPTEN_VERSION").read_text(encoding="utf-8").strip()
+
+assert re.fullmatch(r"\d+\.\d+\.\d+", emscripten_version)
 
 required = (
     "id: wasm-binaries",
     "actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5",
     "emscripten-core/setup-emsdk@4528d102f7230f0e7b276855c01ea1159be0e984 # v16",
+    "Read pinned Emscripten version",
+    "version: ${{ steps.emscripten.outputs.version }}",
+    "emscripten-${{ steps.emscripten.outputs.version }}",
     "wasmmc-bundles-v2-llvm-",
     "hashFiles('LLVM_SHA256', 'CMakeLists.txt', 'src/**', 'scripts/check_llvm_targets.py', 'regression/llvm-target-inventory.json')",
     "build/llvm_backend_mainstream.js",

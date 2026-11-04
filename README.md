@@ -65,12 +65,15 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`. Opening `index.html` directly with a `file:`
 URL is not supported because browsers restrict WebAssembly workers and fetches.
+The Emscripten 6 backend targets Chrome 85 or newer, Firefox 79 or newer, and
+Safari 15 or newer.
 
 ## Build
 
-The pinned LLVM release is stored in `LLVM_VERSION`, and its official GitHub
-release-asset digest is stored in `LLVM_SHA256`. Downloads that do not match
-that SHA-256 digest are rejected. A normal Emscripten build is:
+The pinned LLVM release is stored in `LLVM_VERSION`, its official GitHub
+release-asset digest is stored in `LLVM_SHA256`, and the build toolchain release
+is stored in `EMSCRIPTEN_VERSION`. Downloads that do not match the LLVM SHA-256
+digest are rejected. A normal Emscripten build is:
 
 ```sh
 mkdir -p build
