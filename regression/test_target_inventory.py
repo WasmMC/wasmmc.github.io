@@ -18,6 +18,7 @@ inventory = json.loads(
 )
 stable = set(inventory["stable"])
 experimental = set(inventory["experimental"])
+reviewed_version = inventory["llvm_version"]
 
 fixture = """
 set(LLVM_ALL_TARGETS AArch64 ARM X86)
@@ -29,10 +30,10 @@ set(LLVM_ALL_EXPERIMENTAL_TARGETS
 assert parse_cmake_set(fixture, "LLVM_ALL_TARGETS") == {"AArch64", "ARM", "X86"}
 assert parse_cmake_set(fixture, "LLVM_ALL_EXPERIMENTAL_TARGETS") == {"M68k", "Xtensa"}
 
-matching = analyze(inventory, "22.1.8", stable, experimental)
+matching = analyze(inventory, reviewed_version, stable, experimental)
 assert matching["ok"]
 
-added = analyze(inventory, "22.1.8", stable | {"NewArch"}, experimental)
+added = analyze(inventory, reviewed_version, stable | {"NewArch"}, experimental)
 assert not added["ok"] and added["changes"]["added_stable"] == ["NewArch"]
 
 promoted = analyze(inventory, "23.1.0", stable | {"M68k"}, experimental - {"M68k"})
@@ -42,7 +43,7 @@ assert promoted["changes"]["version_mismatch"]
 
 broken = deepcopy(inventory)
 del broken["excluded"]["XCore"]
-assert analyze(broken, "22.1.8", stable, experimental)["inventory_errors"]
+assert analyze(broken, reviewed_version, stable, experimental)["inventory_errors"]
 
 with tempfile.TemporaryDirectory() as directory:
     output = Path(directory) / "targets.cmake"

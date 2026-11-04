@@ -3,7 +3,7 @@
   "cases": [
     {
       "name": "ARM NEON rejected at baseline",
-      "reason": "LLVM 22.1.8 handling of ARMv7 NEON with an unspecified feature mask varies between build contexts. Native and WASM may both accept it, while earlier matching builds rejected it natively and accepted it in WASM. Explicit -neon,-mve and +neon agree.",
+      "reason": "LLVM 22.1.8 and 23.1.5 handling of ARMv7 NEON with an unspecified feature mask varies between build contexts. Native and WASM may both accept it, while other matching builds reject it natively and accept it in WASM. Explicit -neon,-mve and +neon agree.",
       "tracking": "Feature enforcement suite",
       "expected_signatures": [
         {

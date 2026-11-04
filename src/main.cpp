@@ -122,7 +122,7 @@ char* get_target_capabilities(const char* target_triple, const char* cpu) {
     for (const auto& processor : STI->getAllProcessorDescriptions()) {
         if (!first) os << ',';
         first = false;
-        os << "\"" << json_escape(processor.Key) << "\"";
+        os << "\"" << json_escape(processor.key()) << "\"";
     }
     os << "],\"features\":[";
 
@@ -130,8 +130,8 @@ char* get_target_capabilities(const char* target_triple, const char* cpu) {
     for (const auto& feature : STI->getAllProcessorFeatures()) {
         if (!first) os << ',';
         first = false;
-        os << "{\"name\":\"" << json_escape(feature.Key)
-           << "\",\"description\":\"" << json_escape(feature.Desc)
+        os << "{\"name\":\"" << json_escape(feature.key())
+           << "\",\"description\":\"" << json_escape(feature.desc())
            << "\",\"enabled\":" << (STI->hasFeature(feature.Value) ? "true" : "false")
            << '}';
     }
@@ -207,7 +207,7 @@ char* assemble_string(const char* asm_str,
         llvm::MemoryBuffer::getMemBuffer(AsmInput, "<inline-asm>");
     SrcMgr.AddNewSourceBuffer(std::move(Buffer), llvm::SMLoc());
 
-    llvm::MCContext Ctx(TheTriple, MAI.get(), MRI.get(), STI.get(), &SrcMgr);
+    llvm::MCContext Ctx(TheTriple, *MAI, *MRI, *STI, &SrcMgr);
 
     std::unique_ptr<llvm::MCObjectFileInfo> MOFI(
         TheTarget->createMCObjectFileInfo(Ctx, /*PIC=*/false));
@@ -244,7 +244,7 @@ char* assemble_string(const char* asm_str,
     }
 
     std::unique_ptr<llvm::MCTargetAsmParser> TAP(
-        TheTarget->createMCAsmParser(*STI, *Parser, *MII, MCOptions));
+        TheTarget->createMCAsmParser(*STI, *Parser, *MII));
     if (!TAP) return make_result("ERROR: Failed to create MCTargetAsmParser.");
 
     Parser->setTargetParser(*TAP);
@@ -536,7 +536,7 @@ static char* disassemble_bytes_impl(const uint8_t* bytes,
     if (!MAI || !MII || !STI)
         return make_result("ERROR: Failed to initialize target components.");
 
-    llvm::MCContext Ctx(TheTriple, MAI.get(), MRI.get(), STI.get());
+    llvm::MCContext Ctx(TheTriple, *MAI, *MRI, *STI);
 
     std::unique_ptr<llvm::MCDisassembler> DisAsm(
         TheTarget->createMCDisassembler(*STI, Ctx));
