@@ -155,6 +155,7 @@ jobs:
           REQUIRE_IMM_HEX: "1"
         run: |
           node regression/test_frontend_escape.mjs
+          node regression/test_byte_input.mjs
           node regression/test_backend_integration.mjs
           node regression/test_backend_lifecycle.mjs
 

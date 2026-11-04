@@ -12,7 +12,9 @@ import sys
 
 
 SPLIT_BUNDLES = ("mainstream", "systems", "embedded")
-WEB_ASSETS = ("app.js", "backend-manager.js", "backend-worker.js", "favicon.svg")
+WEB_ASSETS = (
+    "app.js", "byte-input.js", "backend-manager.js", "backend-worker.js", "favicon.svg",
+)
 LEGAL_FILES = ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md")
 LEGAL_LICENSES = ("LLVM.txt", "EMSCRIPTEN.txt", "MUSL.txt")
 
@@ -127,9 +129,14 @@ def stage_site(web_dir: Path, build_dir: Path, site_dir: Path, legal_dir: Path) 
     if index.count(old_favicon) != 1:
         raise ValueError("web/index.html does not contain the expected favicon link")
     index = index.replace(old_favicon, new_favicon)
-    old_scripts = '<script src="backend-manager.js"></script>\n<script src="app.js"></script>'
+    old_scripts = (
+        '<script src="byte-input.js"></script>\n'
+        '<script src="backend-manager.js"></script>\n'
+        '<script src="app.js"></script>'
+    )
     new_scripts = (
         f'<script src="{config_name}"></script>\n'
+        f'<script src="{frontend_names["byte-input.js"]}"></script>\n'
         f'<script src="{frontend_names["backend-manager.js"]}"></script>\n'
         f'<script src="{frontend_names["app.js"]}"></script>'
     )
