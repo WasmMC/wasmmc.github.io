@@ -15,7 +15,7 @@ assert "-sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString,HEAPU8" in cmake
 
 required = (
     "id: wasm-binaries",
-    "actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5",
+    "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6",
     "emscripten-core/setup-emsdk@4528d102f7230f0e7b276855c01ea1159be0e984 # v16",
     "Read pinned Emscripten version",
     "version: ${{ steps.emscripten.outputs.version }}",
