@@ -973,10 +973,12 @@ function buildAsmPanel(id, defArch, initText, initTitle, initState) {
       placeholder="${esc(assemblyPlaceholder(arch,initState?.syntax||'intel'))}">${esc(sample)}</textarea>
     <div class="arch-row" id="asm-archs-${id}">${archButtonsHTML(defArch)}</div>
     <div id="asm-opts-${id}">${buildOptsHTML(id,'asm',defArch,initState||{})}</div>
-    <button class="run-btn asm-run-btn" id="asm-run-${id}" disabled>
-      <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><polygon points="1,0.5 9.5,5 1,9.5"/></svg>
-      <span>Assemble</span>
-    </button>
+    <div class="run-action">
+      <button class="run-btn asm-run-btn" id="asm-run-${id}" disabled>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><polygon points="1,0.5 9.5,5 1,9.5"/></svg>
+        <span>Assemble</span>
+      </button>
+    </div>
     <div class="output-section" id="asm-sec-${id}" style="display:none">
       <div class="output-tabs" id="asm-tabs-${id}">
         <button class="out-tab active" data-tab="hex">Hex<span class="tabtip">click again to toggle UPPER/lower</span></button>
@@ -1031,10 +1033,12 @@ function buildDisPanel(id, defArch, initText, initBaddr, initShow, initTitle, in
         spellcheck="false" autocorrect="off" autocomplete="off"
         value="${esc(initBaddr||'0x00000000')}" placeholder="0x0 or 0x100+64">
     </div>
-    <button class="run-btn dis-run-btn" id="dis-run-${id}" disabled>
-      <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><polygon points="1,0.5 9.5,5 1,9.5"/></svg>
-      <span>Disassemble</span>
-    </button>
+    <div class="run-action">
+      <button class="run-btn dis-run-btn" id="dis-run-${id}" disabled>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><polygon points="1,0.5 9.5,5 1,9.5"/></svg>
+        <span>Disassemble</span>
+      </button>
+    </div>
     <div class="output-section" id="dis-sec-${id}" style="display:none">
       <div class="output-tabs" id="dis-tabs-${id}">
         <button class="out-tab active" data-tab="pretty">Disassembly<span class="tabtip">click again to toggle DEC/hex immediates</span></button>
