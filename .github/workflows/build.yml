@@ -152,6 +152,7 @@ jobs:
           python3 regression/test_build_cache_policy.py
           python3 regression/test_deployment_policy.py
           python3 regression/test_frontend_hardening.py
+          python3 regression/test_runner_policy.py
           python3 regression/test_supply_chain_policy.py
           python3 regression/test_text_policy.py
 
@@ -190,7 +191,7 @@ jobs:
 
   build_native:
     name: Build pinned native llvm-mc reference
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 330
     outputs:
       llvm-version: ${{ steps.llvm.outputs.version }}
@@ -284,7 +285,7 @@ jobs:
   regression:
     name: Run native-versus-WASM regression
     needs: [build_wasm, build_native]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     steps:
@@ -402,7 +403,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       (github.event.repository.private == false || vars.ENABLE_PRIVATE_PAGES == 'true')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
