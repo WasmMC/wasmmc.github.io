@@ -74,21 +74,21 @@ body.is-dragging .drag-overlay{display:flex}
 .layout-choice.active{color:var(--accent);border-color:var(--accent);background:rgba(56,189,248,.07);position:relative;z-index:2}
 .add-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-size:12px;padding:0 12px;transition:all .15s;white-space:nowrap}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
-.panel-grid{display:flex;flex-wrap:wrap;gap:14px;align-items:start}
+.panel-grid{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
 .panel-grid.layout-auto  .panel-wrap{flex:1 1 480px;min-width:0}
 .panel-grid.layout-stack .panel-wrap{flex:1 1 100%;min-width:0}
 .panel-grid.layout-side  .panel-wrap{flex:1 1 calc(50% - 7px);min-width:0}
-.panel-wrap{animation:slideIn .2s ease-out}
+.panel-wrap{animation:slideIn .2s ease-out;display:flex}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 .panel-wrap.closing{animation:slideOut .17s ease-in forwards;pointer-events:none}
 @keyframes slideOut{from{opacity:1;max-height:900px;margin-bottom:0}to{opacity:0;max-height:0;margin-bottom:-14px}}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex:1 1 auto;flex-direction:column;min-width:0}
 .panel-header{border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);gap:8px}
 .panel-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
 .panel-title-main{color:var(--panel-title-main)}.panel-title-sub{color:var(--panel-title-sub);letter-spacing:.8px}.panel-title-sub:empty{display:none}
 .close-btn{width:20px;height:20px;border-radius:4px;background:none;border:1px solid transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
 .close-btn:hover{background:rgba(248,113,113,.12);border-color:var(--error);color:var(--error)}
-.panel-body{padding:13px 15px 15px}
+.panel-body{padding:13px 15px 15px;display:flex;flex:1 1 auto;flex-direction:column;min-width:0}
 .asm-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:12.5px;line-height:1.65;padding:10px 12px;resize:vertical;min-height:110px;outline:none;transition:border-color .15s;tab-size:4}
 .asm-textarea:focus{border-color:var(--accent)}
 [data-theme="light"] .asm-textarea{background:var(--surface2)}
@@ -128,7 +128,8 @@ body.is-dragging .drag-overlay{display:flex}
 .binary-window-row label{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
 .binary-window-summary{font-family:var(--mono);margin-right:auto;overflow-wrap:anywhere}
 .binary-window-input{width:88px}
-.run-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;width:140px;height:30px;margin-top:12px;flex-shrink:0;transition:opacity .15s,transform .1s;white-space:nowrap}
+.run-action{margin-top:auto;padding-top:12px}
+.run-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;width:140px;height:30px;margin-top:0;flex-shrink:0;transition:opacity .15s,transform .1s;white-space:nowrap}
 .run-btn:hover:not(:disabled){opacity:.85}.run-btn:active:not(:disabled){transform:scale(.97)}.run-btn:disabled{opacity:.35;cursor:not-allowed}
 .output-section{margin-top:14px}
 .output-tabs{display:flex;gap:3px;flex-wrap:wrap}
