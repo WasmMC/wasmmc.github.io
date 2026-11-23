@@ -1,19 +1,58 @@
 {
   "schema": 1,
-  "llvm_version": "23.1.5",
+  "llvm_version": "23.1.6",
   "stable": [
-    "AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai",
-    "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV",
-    "Sparc", "SPIRV", "SystemZ", "VE", "WebAssembly", "X86", "XCore"
+    "AArch64",
+    "AMDGPU",
+    "ARM",
+    "AVR",
+    "BPF",
+    "Hexagon",
+    "Lanai",
+    "LoongArch",
+    "Mips",
+    "MSP430",
+    "NVPTX",
+    "PowerPC",
+    "RISCV",
+    "Sparc",
+    "SPIRV",
+    "SystemZ",
+    "VE",
+    "WebAssembly",
+    "X86",
+    "XCore"
   ],
-  "experimental": ["ARC", "CSKY", "DirectX", "M68k", "Xtensa"],
+  "experimental": [
+    "ARC",
+    "CSKY",
+    "DirectX",
+    "M68k",
+    "Xtensa"
+  ],
   "bundles": {
-    "mainstream": ["X86", "AArch64", "ARM"],
-    "systems": [
-      "RISCV", "Mips", "PowerPC", "Sparc", "WebAssembly", "BPF",
-      "LoongArch", "SystemZ"
+    "mainstream": [
+      "X86",
+      "AArch64",
+      "ARM"
     ],
-    "embedded": ["AVR", "MSP430", "M68k", "Xtensa", "Hexagon"]
+    "systems": [
+      "RISCV",
+      "Mips",
+      "PowerPC",
+      "Sparc",
+      "WebAssembly",
+      "BPF",
+      "LoongArch",
+      "SystemZ"
+    ],
+    "embedded": [
+      "AVR",
+      "MSP430",
+      "M68k",
+      "Xtensa",
+      "Hexagon"
+    ]
   },
   "excluded": {
     "AMDGPU": "GPU backend; intentionally excluded from browser MC bundles",
